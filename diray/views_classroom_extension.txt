@@ -1,0 +1,58 @@
+
+# ==========================================
+# CLASSROOM VIEWS
+# ==========================================
+
+from .models import RecordedVideo, Comment
+
+@login_required
+def classroom(request, training_slug, video_id=None):
+    """Classroom view for VOD"""
+    try:
+        profile = request.user.profile
+        student_profile = profile.student_profile
+    except:
+         return redirect('home')
+
+    # Get Training and check access
+    training = get_object_or_404(Training, slug=training_slug)
+    if not student_profile.formations_access.filter(id=training.id).exists():
+        messages.error(request, "Vous n'avez pas accès à cette formation.")
+        return redirect('diray:dashboard')
+        
+    # Get Videos
+    videos = RecordedVideo.objects.filter(training=training, is_active=True).order_by('created_at')
+    
+    if not videos.exists():
+        messages.warning(request, "Aucune vidéo disponible pour cette formation.")
+        return redirect('diray:dashboard')
+        
+    # Select current video
+    if video_id:
+        current_video = get_object_or_404(RecordedVideo, id=video_id, training=training)
+    else:
+        current_video = videos.first()
+        
+    # Get Comments
+    comments = Comment.objects.filter(video=current_video, is_deleted=False).order_by('-created_at')
+    
+    # Handle Comment Submission
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content:
+            Comment.objects.create(
+                video=current_video,
+                user=profile,
+                content=content
+            )
+            messages.success(request, "Votre question a été ajoutée.")
+            return redirect('diray:classroom_video', training_slug=training.slug, video_id=current_video.id)
+            
+    context = {
+        'training': training,
+        'videos': videos,
+        'current_video': current_video,
+        'comments': comments,
+    }
+    
+    return render(request, 'diray/classroom/classroom.html', context)

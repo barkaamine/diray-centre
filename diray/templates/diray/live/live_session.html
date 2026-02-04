@@ -1,0 +1,300 @@
+{% extends 'diray/base.html' %}
+{% load static %}
+
+{% block title %}LIVE - {% for t in session.formations.all %}{{ t.title }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endblock %}
+
+{% block content %}
+<div class="fixed inset-0 bg-black text-white font-sans overflow-hidden flex flex-col z-50">
+    <!-- Top Overlay Bar -->
+    <div class="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/90 to-transparent z-40 px-8 flex items-center justify-between pointer-events-none">
+        <div class="pointer-events-auto flex items-center gap-6">
+            <a href="{% if user.profile.role == 'PROFESSOR' %}{% url 'diray:professor_dashboard' %}{% else %}{% url 'diray:dashboard' %}{% endif %}" 
+               class="size-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md flex items-center justify-center transition-all group">
+                <span class="material-symbols-outlined group-hover:-translate-x-0.5 transition-transform">arrow_back</span>
+            </a>
+            <div>
+                <h1 class="text-lg font-black tracking-tight leading-none drop-shadow-md">
+                    {% for t in session.formations.all %}
+                        {{ t.title }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </h1>
+                <div class="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-white/60 mt-1">
+                    <span class="size-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                    <span>En Direct</span>
+                    <span class="text-white/20 px-1">•</span>
+                    <span>{{ session.city }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="pointer-events-auto flex items-center gap-4">
+            <div class="px-4 py-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/5 flex items-center gap-3">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-red-500">
+                    <span class="material-symbols-outlined text-sm">sensors</span>
+                    <span>LIVE</span>
+                </div>
+                <div class="w-px h-4 bg-white/10"></div>
+                <div class="flex items-center gap-1.5 text-xs font-bold text-white/80">
+                    <span class="material-symbols-outlined text-sm">group</span>
+                    <span id="participant-count">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Stage -->
+    <div class="relative flex-1 bg-black flex items-center justify-center">
+        {% if is_currently_live %}
+            <!-- Video Container -->
+            <div id="agora-video-container" class="absolute inset-0 z-0">
+                <!-- Host Video (Full Screen) -->
+                <div id="remote-player-host" class="w-full h-full object-cover">
+                    <!-- Placeholder/Loader -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 text-zinc-500">
+                        <span class="material-symbols-outlined text-6xl animate-pulse mb-4">wifi_tethering</span>
+                        <p class="text-xs font-black uppercase tracking-[0.2em] animate-pulse">Connexion au Hub...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Self View (PIP) -->
+            <div id="local-player" class="absolute bottom-32 right-8 w-64 aspect-video rounded-2xl bg-zinc-800 border-2 border-white/10 shadow-2xl overflow-hidden z-30 transition-all hover:scale-105 hover:border-brand-green/50 hover:shadow-brand-green/20 group cursor-move hidden">
+                <div class="absolute inset-0 flex items-center justify-center bg-zinc-900 icon-placeholder group-hover:hidden">
+                    <span class="material-symbols-outlined text-white/20">videocam_off</span>
+                </div>
+            </div>
+            
+        {% else %}
+             <!-- Waiting State -->
+            <div class="z-10 text-center max-w-2xl px-6">
+                <div class="size-32 rounded-full bg-zinc-900/50 backdrop-blur-xl border border-white/5 flex items-center justify-center mx-auto mb-8 animate-pulse">
+                    <span class="material-symbols-outlined text-6xl text-white/20">schedule</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl font-black tracking-tighter mb-6 bg-gradient-to-br from-white to-zinc-500 bg-clip-text text-transparent">Session Hors Ligne</h2>
+                <p class="text-lg text-zinc-400 font-medium mb-12 leading-relaxed">
+                    Le flux n'est pas actif pour le moment. <br>
+                    {% if session.start_date > now %}
+                        Démarrage prévu le <span class="text-white border-b border-white/20">{{ session.start_date|date:"d F à H:i" }}</span>.
+                    {% else %}
+                        En attente de l'instructeur.
+                    {% endif %}
+                </p>
+                <button onclick="window.history.back()" class="px-10 py-4 bg-white text-black rounded-full font-black text-xs uppercase tracking-widest hover:scale-105 transition-transform">
+                    Retour
+                </button>
+            </div>
+            
+            <!-- Animated Background -->
+            <div class="absolute inset-0 z-0 opacity-20">
+                <div class="absolute top-1/4 left-1/4 size-96 bg-brand-green/30 rounded-full blur-[128px]"></div>
+                <div class="absolute bottom-1/4 right-1/4 size-96 bg-blue-600/30 rounded-full blur-[128px]"></div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Bottom Controls Bar -->
+    {% if is_currently_live %}
+    <div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black via-black/80 to-transparent z-40 px-8 flex items-center justify-center backdrop-blur-[2px]">
+        <div class="flex items-center gap-3 md:gap-6 p-2 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl">
+            
+            <button id="mic-btn" class="size-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all group border border-transparent hover:border-white/20 relative" title="Microphone">
+                <span class="material-symbols-outlined text-xl group-hover:text-white transition-colors">mic</span>
+                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-transparent group-hover:bg-emerald-400 transition-colors"></div>
+            </button>
+            
+            <button id="camera-btn" class="size-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all group border border-transparent hover:border-white/20 relative" title="Caméra">
+                <span class="material-symbols-outlined text-xl group-hover:text-white transition-colors">videocam</span>
+                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-transparent group-hover:bg-blue-400 transition-colors"></div>
+            </button>
+            
+            <div class="w-px h-8 bg-white/10"></div>
+            
+            <button id="leave-btn" class="px-6 h-12 rounded-2xl bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 hover:border-red-500 transition-all flex items-center gap-3 group">
+                <span class="material-symbols-outlined text-xl group-hover:rotate-90 transition-transform duration-300">call_end</span>
+                <span class="text-[10px] font-black uppercase tracking-widest hidden md:inline-block">Quitter</span>
+            </button>
+
+            {% if user_is_host %}
+            <div class="w-px h-8 bg-white/10"></div>
+            
+            <button id="screen-share-btn" class="size-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all group border border-transparent hover:border-white/20 relative">
+                <span class="material-symbols-outlined text-xl group-hover:text-amber-400 transition-colors">present_to_all</span>
+            </button>
+            
+            <a href="{% url 'diray:end_live_stream' stream.id %}" class="px-6 h-12 rounded-2xl bg-white text-black hover:bg-zinc-200 transition-all flex items-center gap-3 shadow-lg shadow-white/5">
+                <span class="material-symbols-outlined text-xl">stop_circle</span>
+                <span class="text-[10px] font-black uppercase tracking-widest hidden md:inline-block">Fin du Live</span>
+            </a>
+            {% endif %}
+            
+            <button onclick="toggleFullscreen()" class="size-12 rounded-2xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all group border border-transparent hover:border-white/20 ml-auto md:ml-0">
+                <span class="material-symbols-outlined text-xl">fullscreen</span>
+            </button>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if is_currently_live %}
+<!-- Agora SDK -->
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.19.0.js"></script>
+<script>
+    const APP_ID = "{{ agora_app_id }}";
+    const CHANNEL = "{{ agora_channel }}";
+    const TOKEN = "{{ agora_token }}";
+    const UID = {{ user.id }};
+    const USER_ROLE = "{% if user_is_host %}host{% else %}audience{% endif %}";
+    const STREAM_ID = {{ stream.id }};
+    
+    let rtc = {
+        client: null,
+        localAudioTrack: null,
+        localVideoTrack: null,
+        screenTrack: null,
+    };
+    
+    let options = {
+        appId: APP_ID,
+        channel: CHANNEL,
+        token: TOKEN,
+        uid: UID,
+    };
+    
+    async function startLiveSession() {
+        rtc.client = AgoraRTC.createClient({ mode: "live", codec: "vp8" });
+        
+        if (USER_ROLE === 'host') {
+            await rtc.client.setClientRole("host");
+        } else {
+            await rtc.client.setClientRole("audience");
+        }
+        
+        rtc.client.on("user-published", async (user, mediaType) => {
+            await rtc.client.subscribe(user, mediaType);
+            
+            if (mediaType === "video") {
+                const remoteVideoTrack = user.videoTrack;
+                const playerContainer = document.getElementById("remote-player-host");
+                playerContainer.innerHTML = ""; 
+                remoteVideoTrack.play(playerContainer, { fit: "cover" }); // Use Agora's fit option if available or rely on CSS
+            }
+            
+            if (mediaType === "audio") {
+                user.audioTrack.play();
+            }
+            
+            updateParticipantCount();
+        });
+        
+        rtc.client.on("user-unpublished", (user) => {
+            if (USER_ROLE !== 'host') {
+                const playerContainer = document.getElementById("remote-player-host");
+                playerContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center w-full h-full bg-zinc-900 text-zinc-500">
+                        <span class="material-symbols-outlined text-6xl mb-4">videocam_off</span>
+                        <p class="text-xs font-black uppercase tracking-[0.2em]">Flux interrompu</p>
+                    </div>`;
+            }
+            updateParticipantCount();
+        });
+        
+        await rtc.client.join(options.appId, options.channel, options.token, options.uid);
+        
+        if (USER_ROLE === 'host') {
+            rtc.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+            rtc.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
+            
+            // Show local player
+            document.getElementById("local-player").classList.remove("hidden");
+            rtc.localVideoTrack.play("local-player", { fit: "cover" });
+            
+            await rtc.client.publish([rtc.localAudioTrack, rtc.localVideoTrack]);
+        }
+        
+        updateParticipantCount();
+    }
+    
+    function updateParticipantCount() {
+        const count = rtc.client ? rtc.client.remoteUsers.length + 1 : 0;
+        document.getElementById("participant-count").textContent = count;
+    }
+
+    function startAttendanceHeartbeat() {
+        if (USER_ROLE === 'audience') {
+            setInterval(() => {
+                fetch(`/api/attendance/heartbeat/${STREAM_ID}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                });
+            }, 60000); 
+        }
+    }
+    
+    async function leaveSession() {
+        if (rtc.localAudioTrack) rtc.localAudioTrack.close();
+        if (rtc.localVideoTrack) rtc.localVideoTrack.close();
+        
+        await rtc.client.leave();
+        
+        const redirectUrl = (USER_ROLE === 'host') ? "{% url 'diray:professor_dashboard' %}" : "{% url 'diray:dashboard' %}";
+        window.location.href = redirectUrl;
+    }
+    
+    // UI Controls Logic
+    document.getElementById("mic-btn").addEventListener("click", function() {
+        if (!rtc.localAudioTrack) return;
+        if (rtc.localAudioTrack.muted) {
+            rtc.localAudioTrack.setMuted(false);
+            this.classList.remove("bg-red-500/20", "text-red-500");
+            this.querySelector("span").textContent = "mic";
+        } else {
+            rtc.localAudioTrack.setMuted(true);
+            this.classList.add("bg-red-500/20", "text-red-500");
+            this.querySelector("span").textContent = "mic_off";
+        }
+    });
+    
+    document.getElementById("camera-btn").addEventListener("click", function() {
+        if (!rtc.localVideoTrack) return;
+        const localContainer = document.getElementById("local-player");
+        
+        if (rtc.localVideoTrack.muted) {
+            rtc.localVideoTrack.setMuted(false);
+            this.classList.remove("bg-red-500/20", "text-red-500");
+            this.querySelector("span").textContent = "videocam";
+            if(USER_ROLE === 'host') localContainer.classList.remove("hidden");
+        } else {
+            rtc.localVideoTrack.setMuted(true);
+            this.classList.add("bg-red-500/20", "text-red-500");
+            this.querySelector("span").textContent = "videocam_off";
+            // Optional: Hide local preview if muted
+            // if(USER_ROLE === 'host') localContainer.classList.add("hidden");
+        }
+    });
+    
+    document.getElementById("leave-btn").addEventListener("click", leaveSession);
+    
+    if (document.getElementById("screen-share-btn")) {
+        document.getElementById("screen-share-btn").addEventListener("click", async function() {
+            alert("Partage d'écran bientôt disponible");
+        });
+    }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+    
+    startLiveSession();
+    startAttendanceHeartbeat();
+</script>
+{% endif %}
+{% endblock %}

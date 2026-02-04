@@ -1,0 +1,65 @@
+
+# ==========================================
+# E-LEARNING ADMIN CONFIGURATION
+# ==========================================
+
+@admin.register(Profile)
+class ProfileAdmin(BaseAdmin):
+    list_display = ['user', 'full_name', 'role', 'city', 'status', 'email_verified', 'created_at']
+    list_filter = ['role', 'status', 'city', 'email_verified']
+    search_fields = ['user__username', 'user__email', 'full_name', 'cin_or_passport', 'phone_number']
+    list_editable = ['status']
+    actions = ['approve_users', 'suspend_users']
+
+    def approve_users(self, request, queryset):
+        queryset.update(status='ACTIVE')
+    approve_users.short_description = "Approuver les utilisateurs sélectionnés"
+
+    def suspend_users(self, request, queryset):
+        queryset.update(status='SUSPENDED')
+    suspend_users.short_description = "Suspendre les utilisateurs sélectionnés"
+
+@admin.register(StudentProfile)
+class StudentProfileAdmin(BaseAdmin):
+    list_display = ['profile', 'get_formations_count']
+    search_fields = ['profile__full_name', 'profile__cin_or_passport']
+    filter_horizontal = ['formations_access', 'sessions_access']
+    
+    def get_formations_count(self, obj):
+        return obj.formations_access.count()
+    get_formations_count.short_description = "Formations accessibles"
+
+@admin.register(ProfessorProfile)
+class ProfessorProfileAdmin(BaseAdmin):
+    list_display = ['profile', 'active']
+    list_filter = ['active']
+    search_fields = ['profile__full_name']
+
+@admin.register(Session)
+class SessionAdmin(BaseAdmin):
+    list_display = ['training', 'city', 'professor', 'start_datetime', 'is_live', 'is_active']
+    list_filter = ['is_live', 'is_active', 'city', 'training']
+    search_fields = ['training__title', 'city', 'professor__profile__full_name']
+    date_hierarchy = 'start_datetime'
+
+@admin.register(RecordedVideo)
+class RecordedVideoAdmin(BaseAdmin):
+    list_display = ['title', 'training', 'duration_seconds', 'is_active', 'created_at']
+    list_filter = ['training', 'is_active']
+    search_fields = ['title', 'training__title']
+
+@admin.register(LiveRecording)
+class LiveRecordingAdmin(BaseAdmin):
+    list_display = ['session', 'created_at']
+
+@admin.register(AttendanceLog)
+class AttendanceLogAdmin(BaseAdmin):
+    list_display = ['student', 'session', 'join_time', 'duration_seconds']
+    list_filter = ['session__training', 'session']
+    search_fields = ['student__full_name']
+
+@admin.register(Comment)
+class CommentAdmin(BaseAdmin):
+    list_display = ['user', 'video', 'created_at', 'is_deleted']
+    list_filter = ['is_deleted', 'created_at']
+    search_fields = ['content', 'user__full_name', 'video__title']

@@ -1,0 +1,115 @@
+{% extends 'diray/dashboard/base_student.html' %}
+{% load static %}
+
+{% block student_header_title %}Mon Calendrier{% endblock %}
+{% block student_header_subtitle %}Suivez l'évolution de votre programme et vos prochaines sessions.{% endblock %}
+
+{% block student_content %}
+{% if session %}
+<div class="mb-8 flex flex-wrap gap-4">
+    <div class="glass-card px-6 py-4 flex items-center gap-4">
+        <div class="size-12 rounded-xl bg-accent-green/10 text-accent-green flex items-center justify-center">
+            <span class="material-symbols-outlined">location_city</span>
+        </div>
+        <div>
+            <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--stu-text-muted);">Ville Session</p>
+            <p class="font-bold" style="color: var(--stu-text-main);">{{ session.city.name }}</p>
+        </div>
+    </div>
+
+    <div class="glass-card px-6 py-4 flex items-center gap-4">
+        <div class="size-12 rounded-xl bg-accent-blue/10 text-accent-blue flex items-center justify-center">
+            <span class="material-symbols-outlined">person</span>
+        </div>
+        <div>
+            <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--stu-text-muted);">Professeur</p>
+            <p class="font-bold" style="color: var(--stu-text-main);">{{ session.professor.profile.full_name }}</p>
+        </div>
+    </div>
+
+    <div class="glass-card px-6 py-4 flex items-center gap-4">
+        <div class="size-12 rounded-xl bg-brand-light text-brand flex items-center justify-center">
+            <span class="material-symbols-outlined">auto_stories</span>
+        </div>
+        <div>
+            <p class="text-[10px] font-black uppercase tracking-widest" style="color: var(--stu-text-muted);">Formations Incluses</p>
+            <p class="text-xs font-bold" style="color: var(--stu-text-main);">
+                {% for training in session.formations.all %}
+                    {{ training.title }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="space-y-6">
+    {% for seance in seances %}
+    <div class="seance-row group">
+        <div class="glass-card p-6 flex flex-col md:flex-row items-center gap-6 hover:translate-x-2 transition-transform">
+            <div class="size-16 rounded-2xl flex flex-col items-center justify-center shrink-0 {% if seance.date == today %}bg-brand text-white shadow-lg shadow-brand/20{% elif seance.date > today %}bg-brand-light text-brand{% else %}bg-surface-hover text-muted{% endif %}">
+                <span class="text-xl font-black">{{ seance.date|date:"d" }}</span>
+                <span class="text-[9px] font-black uppercase tracking-widest">{{ seance.date|date:"M" }}</span>
+            </div>
+
+            <div class="flex-1 text-center md:text-left">
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
+                    <h3 class="text-lg font-black" style="color: var(--stu-text-main);">{{ seance.title }}</h3>
+                    <span class="px-2 py-0.5 {% if seance.type == 'THEORIQUE' %}bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400{% else %}bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400{% endif %} rounded-md text-[9px] font-black uppercase tracking-widest">
+                        {{ seance.get_type_display }}
+                    </span>
+                </div>
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 text-xs font-bold" style="color: var(--stu-text-muted);">
+                    <div class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-sm">schedule</span>
+                        {{ seance.time|time:"H:i" }}
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-sm">location_on</span>
+                        {{ seance.location|default:session.city.name }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center md:items-end gap-3">
+                {% if seance.date == today %}
+                <span class="status-badge badge-success">Aujourd'hui</span>
+                {% elif seance.date > today %}
+                <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 rounded-full text-[10px] font-black uppercase tracking-widest">À venir</span>
+                {% else %}
+                <span class="px-3 py-1 bg-surface-hover text-muted rounded-full text-[10px] font-black uppercase tracking-widest">Terminée</span>
+                {% endif %}
+                
+                {% if seance.description %}
+                <p class="text-[11px] font-medium italic max-w-[200px] text-center md:text-right hidden sm:block" style="color: var(--stu-text-muted);">
+                    {{ seance.description }}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="py-20 glass-card flex flex-col items-center justify-center text-center border-dashed">
+        <div class="size-20 rounded-full bg-surface-hover flex items-center justify-center mb-6">
+            <span class="material-symbols-outlined text-muted text-4xl">event_busy</span>
+        </div>
+        <h3 class="text-xl font-bold mb-2" style="color: var(--stu-text-main);">Aucune séance</h3>
+        <p class="max-w-xs mx-auto" style="color: var(--stu-text-muted);">Votre calendrier est actuellement vide.</p>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="py-32 glass-card flex flex-col items-center justify-center text-center border-dashed">
+    <div class="size-24 rounded-[32px] bg-surface-hover text-muted flex items-center justify-center mx-auto mb-8">
+        <span class="material-symbols-outlined text-6xl">group_off</span>
+    </div>
+    <h2 class="text-2xl font-black mb-4" style="color: var(--stu-text-main);">Initialisation requise</h2>
+    <p class="font-medium max-w-sm mx-auto mb-8" style="color: var(--stu-text-muted);">
+        Vous n'avez pas encore été assigné à une session de formation.
+    </p>
+    <a href="{% url 'diray:contact_centers' %}" class="px-8 py-3 bg-neutral-900 dark:bg-neutral-800 text-white rounded-xl font-bold text-sm hover:scale-105 transition-all">
+        Contacter l'administration
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+

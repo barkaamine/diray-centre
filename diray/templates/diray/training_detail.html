@@ -1,0 +1,1584 @@
+<!-- templates/diray/training_detail.html - COMPLETELY REWRITTEN -->
+{% extends 'diray/base.html' %}
+{% load math_filters %}
+
+{% load static %}
+
+{% block title %}{{ training.title }} - Diray Centre{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Import Outfit font for modern look */
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+    
+    * {
+        font-family: 'Outfit', sans-serif;
+    }
+    
+    /* ========== GLOBAL STYLES ========== */
+    :root {
+        --primary-gradient: linear-gradient(135deg, #34745c 0%, #2dd4bf 100%);
+        --accent-gradient: linear-gradient(135deg, #1e293b 0%, #0f4d63 100%);
+        --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    /* ========== HERO SECTION (UNCHANGED) ========== */
+    .hero-gradient {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f4d63 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-info-card {
+        background: rgba(255,255,255,0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .hero-info-card:hover {
+        background: rgba(255,255,255,0.08);
+        transform: translateY(-5px);
+    }
+    
+    /* ========== BUTTON STYLES ========== */
+    .btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(52,116,92,0.3);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(52,116,92,0.4);
+    }
+    
+    .btn-outline {
+        background: transparent;
+        color: #34745c;
+        border: 2px solid #34745c;
+        border-radius: 0.75rem;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline:hover {
+        background: var(--primary-gradient);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(52,116,92,0.3);
+    }
+    
+    .dark .btn-outline {
+        color: #2dd4bf;
+        border-color: #2dd4bf;
+    }
+    
+    .dark .btn-outline:hover {
+        background: var(--primary-gradient);
+        color: white;
+    }
+    
+    /* ========== SIDEBAR STYLES ========== */
+    .sidebar-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    
+    .dark .sidebar-card {
+        background: #1e293b;
+        border-color: #374151;
+    }
+    
+    .city-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        background: #f0fdf4;
+        border: 1px solid #86efac;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #166534;
+        transition: all 0.2s ease;
+    }
+    
+    .dark .city-badge {
+        background: #064e3b;
+        border-color: #059669;
+        color: #6ee7b7;
+    }
+    
+    .city-badge:hover {
+        transform: translateX(2px);
+        background: #dcfce7;
+    }
+    
+    .dark .city-badge:hover {
+        background: #065f46;
+    }
+    
+    /* ========== CERTIFICATES SECTION ========== */
+    .certificate-card {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        border: 2px solid #e5e7eb;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .dark .certificate-card {
+        background: #1e293b;
+        border-color: #374151;
+    }
+    
+    .certificate-card:hover {
+        transform: translateY(-8px);
+        border-color: #34745c;
+        box-shadow: 0 20px 40px rgba(52,116,92,0.15);
+    }
+    
+    .certificate-image-wrapper {
+        position: relative;
+        width: 100%;
+        height: 200px;
+        overflow: hidden;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    }
+    
+    .dark .certificate-image-wrapper {
+        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    }
+    
+    .certificate-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .certificate-card:hover .certificate-image {
+        transform: scale(1.05);
+    }
+    
+    .certificate-badge {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        background: var(--primary-gradient);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    
+    /* ========== GALLERY SECTION ========== */
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    
+    .gallery-item {
+        position: relative;
+        border-radius: 1rem;
+        overflow: hidden;
+        aspect-ratio: 4/3;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .gallery-item:hover {
+        transform: scale(1.02);
+    }
+    
+    .gallery-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .gallery-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+        padding: 1rem;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .gallery-item:hover .gallery-overlay {
+        transform: translateY(0);
+    }
+    
+    .gallery-caption {
+        color: white;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+    
+    /* ========== FACEBOOK-STYLE COMMENTS ========== */
+    .comments-section {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .dark .comments-section {
+        background: #1e293b;
+        border-color: #374151;
+    }
+    
+    .comment-form {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .dark .comment-form {
+        border-bottom-color: #374151;
+    }
+    
+    .comment-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary-gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+    
+    .comment-input-wrapper {
+        flex: 1;
+    }
+    
+    .comment-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 1.5rem;
+        background: #f3f4f6;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+    }
+    
+    .dark .comment-input {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: white;
+    }
+    
+    .comment-input:focus {
+        outline: none;
+        background: white;
+        border-color: #34745c;
+        box-shadow: 0 0 0 3px rgba(52,116,92,0.1);
+    }
+    
+    .dark .comment-input:focus {
+        background: #1a202c;
+    }
+    
+    .comment-item {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .comment-item:hover {
+        background: #f9fafb;
+    }
+    
+    .dark .comment-item:hover {
+        background: #2d3748;
+    }
+    
+    .comment-content {
+        flex: 1;
+    }
+    
+    .comment-bubble {
+        background: #f3f4f6;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .dark .comment-bubble {
+        background: #2d3748;
+    }
+    
+    .comment-author {
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: #111827;
+        margin-bottom: 0.25rem;
+    }
+    
+    .dark .comment-author {
+        color: #f3f4f6;
+    }
+    
+    .comment-text {
+        font-size: 0.9375rem;
+        color: #374151;
+        line-height: 1.5;
+    }
+    
+    .dark .comment-text {
+        color: #d1d5db;
+    }
+    
+    .comment-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 0.8125rem;
+        color: #6b7280;
+        padding-left: 1rem;
+    }
+    
+    .dark .comment-meta {
+        color: #9ca3af;
+    }
+    
+    .comment-action {
+        cursor: pointer;
+        transition: color 0.2s ease;
+        font-weight: 500;
+    }
+    
+    .comment-action:hover {
+        color: #34745c;
+    }
+    
+    .rating-stars {
+        display: inline-flex;
+        gap: 0.125rem;
+        color: #f59e0b;
+    }
+    
+    /* ========== PAYPAL-STYLE PAYMENT ========== */
+    .payment-container {
+        background: white;
+        border-radius: 1rem;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+    
+    .dark .payment-container {
+        background: #1e293b;
+        border-color: #374151;
+    }
+    
+    .payment-header {
+        padding: 1.5rem;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .dark .payment-header {
+        background: #0f172a;
+        border-bottom-color: #374151;
+    }
+    
+    .payment-body {
+        padding: 1.5rem;
+    }
+    
+    .payment-method-selector {
+        display: grid;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .payment-method-option {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .dark .payment-method-option {
+        border-color: #374151;
+    }
+    
+    .payment-method-option:hover {
+        border-color: #34745c;
+        background: #f9fafb;
+    }
+    
+    .dark .payment-method-option:hover {
+        background: #2d3748;
+    }
+    
+    .payment-method-option.selected {
+        border-color: #34745c;
+        background: #f0fdf4;
+    }
+    
+    .dark .payment-method-option.selected {
+        background: #064e3b;
+    }
+    
+    .payment-method-radio {
+        width: 20px;
+        height: 20px;
+        accent-color: #34745c;
+    }
+    
+    .payment-method-icon {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f3f4f6;
+        border-radius: 0.5rem;
+    }
+    
+    .dark .payment-method-icon {
+        background: #374151;
+    }
+    
+    .card-input-group {
+        margin-bottom: 1rem;
+    }
+    
+    .card-input-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+    
+    .dark .card-input-label {
+        color: #d1d5db;
+    }
+    
+    .card-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 0.9375rem;
+        transition: all 0.2s ease;
+    }
+    
+    .dark .card-input {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: white;
+    }
+    
+    .card-input:focus {
+        outline: none;
+        border-color: #34745c;
+        box-shadow: 0 0 0 3px rgba(52,116,92,0.1);
+    }
+    
+    .payment-summary {
+        background: #f9fafb;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .dark .payment-summary {
+        background: #0f172a;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        font-size: 0.9375rem;
+    }
+    
+    .summary-row.total {
+        border-top: 2px solid #e5e7eb;
+        margin-top: 0.5rem;
+        padding-top: 1rem;
+        font-weight: 600;
+        font-size: 1.125rem;
+        color: #111827;
+    }
+    
+    .dark .summary-row.total {
+        border-top-color: #374151;
+        color: #f3f4f6;
+    }
+    
+    .secure-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: #ecfdf5;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        color: #065f46;
+        margin-top: 1rem;
+    }
+    
+    .dark .secure-badge {
+        background: #064e3b;
+        color: #6ee7b7;
+    }
+    
+    /* ========== LICENCE CARD ========== */
+    .license-card-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1.6 / 1;
+        cursor: pointer;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+    }
+    
+    .license-card-container.flipped {
+        transform: rotateY(180deg);
+    }
+    
+    .license-face {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 25px 60px rgba(52,116,92,0.4);
+    }
+    
+    .license-back-face {
+        transform: rotateY(180deg);
+    }
+    
+    /* ========== MODALS ========== */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.75);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+    
+    .modal.active {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 1rem;
+        max-width: 90%;
+        max-height: 90%;
+        overflow: auto;
+        position: relative;
+    }
+    
+    .dark .modal-content {
+        background: #1e293b;
+    }
+    
+    .modal-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(0,0,0,0.5);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 10;
+    }
+    
+    .modal-close:hover {
+        background: rgba(0,0,0,0.8);
+        transform: scale(1.1);
+    }
+    
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 768px) {
+        .gallery-grid {
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+        
+        .sidebar-card {
+            margin-bottom: 1rem;
+        }
+        
+        .city-badge {
+            font-size: 0.75rem;
+            padding: 0.375rem 0.625rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ========== HERO SECTION (UNCHANGED) ========== -->
+<section class="hero-gradient text-white py-16">
+    <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+            <!-- Breadcrumb -->
+            <nav class="mb-6 text-sm">
+                <a href="{% url 'diray:home' %}" class="hover:text-teal-300 transition">Accueil</a>
+                <span class="mx-2">/</span>
+                <a href="{% url 'diray:training_catalog' %}" class="hover:text-teal-300 transition">Formations</a>
+                <span class="mx-2">/</span>
+                <span class="text-teal-300">{{ training.title }}</span>
+            </nav>
+            
+            <!-- Title & Badge -->
+            <div class="mb-6">
+                {% if training.badge != 'none' %}
+                <span class="inline-block px-4 py-2 bg-yellow-400 text-gray-900 rounded-full text-sm font-semibold mb-4">
+                    {{ training.get_badge_display }}
+                </span>
+                {% endif %}
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">{{ training.title }}</h1>
+                <p class="text-xl text-gray-300">{{ training.short_description }}</p>
+            </div>
+            
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                <div class="hero-info-card p-4 rounded-xl">
+                    <div class="text-3xl mb-2">⏱️</div>
+                    <div class="text-sm text-gray-300">Durée</div>
+                    <div class="text-lg font-bold">{{ training.duration_days }} jours</div>
+                </div>
+                <div class="hero-info-card p-4 rounded-xl">
+                    <div class="text-3xl mb-2">👥</div>
+                    <div class="text-sm text-gray-300">Places max</div>
+                    <div class="text-lg font-bold">{{ training.max_students }} élèves</div>
+                </div>
+                <div class="hero-info-card p-4 rounded-xl">
+                    <div class="text-3xl mb-2">✅</div>
+                    <div class="text-sm text-gray-300">Taux de réussite</div>
+                    <div class="text-lg font-bold">{{ training.success_rate }}%</div>
+                </div>
+                <div class="hero-info-card p-4 rounded-xl flex flex-col justify-center price-container">
+                    <div class="text-3xl mb-2">💰</div>
+                    <div class="text-sm text-gray-300">Prix</div>
+                    <div class="text-lg font-bold price-display" data-price-mad="{{ training.price_mad }}">{{ training.price_mad }} MAD</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== MAIN CONTENT ========== -->
+<section class="py-12 bg-gray-50 dark:bg-gray-900">
+    <div class="container mx-auto px-4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- ========== MAIN CONTENT (LEFT) ========== -->
+            <div class="lg:col-span-8">
+                
+                <!-- Description détaillée -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 mb-8 shadow-sm border border-gray-200 dark:border-gray-700">
+                    <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">📋 Description de la formation</h2>
+                    <div class="prose max-w-none text-gray-700 dark:text-gray-300">
+                        {{ training.detailed_description|linebreaks }}
+                    </div>
+                </div>
+                
+                <!-- ========== CERTIFICATES SECTION ========== -->
+                {% if training.certificate_image_1 or training.certificate_image_2 or training.certificate_image_3 %}
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 mb-8 shadow-sm border border-gray-200 dark:border-gray-700">
+                    <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">🎓 Certificats délivrés</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {% if training.certificate_image_1 %}
+                        <div class="certificate-card" onclick="openImageModal('{{ training.certificate_image_1 }}', '{{ training.certificate_name_1 }}')">
+                            <div class="certificate-image-wrapper">
+                                <img src="{{ training.certificate_image_1 }}" alt="{{ training.certificate_name_1 }}" class="certificate-image">
+                                <div class="certificate-badge">Certificat</div>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">{{ training.certificate_name_1 }}</h3>
+                                {% if training.certificate_desc_1 %}
+                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ training.certificate_desc_1 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if training.certificate_image_2 %}
+                        <div class="certificate-card" onclick="openImageModal('{{ training.certificate_image_2 }}', '{{ training.certificate_name_2 }}')">
+                            <div class="certificate-image-wrapper">
+                                <img src="{{ training.certificate_image_2 }}" alt="{{ training.certificate_name_2 }}" class="certificate-image">
+                                <div class="certificate-badge">Certificat</div>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">{{ training.certificate_name_2 }}</h3>
+                                {% if training.certificate_desc_2 %}
+                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ training.certificate_desc_2 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if training.certificate_image_3 %}
+                        <div class="certificate-card" onclick="openImageModal('{{ training.certificate_image_3 }}', '{{ training.certificate_name_3 }}')">
+                            <div class="certificate-image-wrapper">
+                                <img src="{{ training.certificate_image_3 }}" alt="{{ training.certificate_name_3 }}" class="certificate-image">
+                                <div class="certificate-badge">Certificat</div>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-bold text-lg mb-2 text-gray-900 dark:text-white">{{ training.certificate_name_3 }}</h3>
+                                {% if training.certificate_desc_3 %}
+                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ training.certificate_desc_3 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- ========== IMAGE GALLERY ========== -->
+                {% if training.gallery_image_1 or training.gallery_image_2 or training.gallery_image_3 or training.gallery_image_4 or training.gallery_image_5 %}
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 mb-8 shadow-sm border border-gray-200 dark:border-gray-700">
+                    <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">📸 Galerie d'images</h2>
+                    
+                    <div class="gallery-grid">
+                        {% if training.gallery_image_1 %}
+                        <div class="gallery-item" onclick="openImageModal('{{ training.gallery_image_1 }}', '{{ training.gallery_caption_1 }}')">
+                            <img src="{{ training.gallery_image_1 }}" alt="{{ training.gallery_caption_1 }}" class="gallery-image">
+                            {% if training.gallery_caption_1 %}
+                            <div class="gallery-overlay">
+                                <div class="gallery-caption">{{ training.gallery_caption_1 }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if training.gallery_image_2 %}
+                        <div class="gallery-item" onclick="openImageModal('{{ training.gallery_image_2 }}', '{{ training.gallery_caption_2 }}')">
+                            <img src="{{ training.gallery_image_2 }}" alt="{{ training.gallery_caption_2 }}" class="gallery-image">
+                            {% if training.gallery_caption_2 %}
+                            <div class="gallery-overlay">
+                                <div class="gallery-caption">{{ training.gallery_caption_2 }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if training.gallery_image_3 %}
+                        <div class="gallery-item" onclick="openImageModal('{{ training.gallery_image_3 }}', '{{ training.gallery_caption_3 }}')">
+                            <img src="{{ training.gallery_image_3 }}" alt="{{ training.gallery_caption_3 }}" class="gallery-image">
+                            {% if training.gallery_caption_3 %}
+                            <div class="gallery-overlay">
+                                <div class="gallery-caption">{{ training.gallery_caption_3 }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if training.gallery_image_4 %}
+                        <div class="gallery-item" onclick="openImageModal('{{ training.gallery_image_4 }}', '{{ training.gallery_caption_4 }}')">
+                            <img src="{{ training.gallery_image_4 }}" alt="{{ training.gallery_caption_4 }}" class="gallery-image">
+                            {% if training.gallery_caption_4 %}
+                            <div class="gallery-overlay">
+                                <div class="gallery-caption">{{ training.gallery_caption_4 }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if training.gallery_image_5 %}
+                        <div class="gallery-item" onclick="openImageModal('{{ training.gallery_image_5 }}', '{{ training.gallery_caption_5 }}')">
+                            <img src="{{ training.gallery_image_5 }}" alt="{{ training.gallery_caption_5 }}" class="gallery-image">
+                            {% if training.gallery_caption_5 %}
+                            <div class="gallery-overlay">
+                                <div class="gallery-caption">{{ training.gallery_caption_5 }}</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Objectifs -->
+                {% if training.objectives %}
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 mb-8 shadow-sm border border-gray-200 dark:border-gray-700">
+                    <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">🎯 Objectifs</h2>
+                    <div class="prose max-w-none text-gray-700 dark:text-gray-300">
+                        {{ training.objectives|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Programme -->
+                {% if training.programme_theorique or training.programme_pratique %}
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 mb-8 shadow-sm border border-gray-200 dark:border-gray-700">
+                    <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">📚 Programme de formation</h2>
+                    
+                    {% if training.programme_theorique %}
+                    <div class="mb-6">
+                        <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Partie théorique</h3>
+                        <div class="prose max-w-none text-gray-700 dark:text-gray-300">
+                            {{ training.programme_theorique|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if training.programme_pratique %}
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Partie pratique</h3>
+                        <div class="prose max-w-none text-gray-700 dark:text-gray-300">
+                            {{ training.programme_pratique|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- Licence Card -->
+                {% if training.license_recto_url or training.license_verso_url %}
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 mb-8 shadow-sm border border-gray-200 dark:border-gray-700">
+                    <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">🪪 Licence de conduite</h2>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">Cliquez sur la carte pour voir le verso</p>
+                    
+                    <div class="max-w-md mx-auto">
+                        <div class="license-card-container" onclick="this.classList.toggle('flipped')">
+                            {% if training.license_recto_url %}
+                            <div class="license-face">
+                                <img src="{{ training.license_recto_url }}" alt="Licence recto" class="w-full h-full object-cover">
+                            </div>
+                            {% endif %}
+                            {% if training.license_verso_url %}
+                            <div class="license-face license-back-face">
+                                <img src="{{ training.license_verso_url }}" alt="Licence verso" class="w-full h-full object-cover">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- ========== FACEBOOK-STYLE COMMENTS SECTION ========== -->
+                <div class="comments-section mb-8">
+                    <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">💬 Avis et commentaires</h2>
+                    
+                    <!-- Comment Form -->
+                    <div class="comment-form">
+                        <div class="comment-avatar">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+                            </svg>
+                        </div>
+                        <div class="comment-input-wrapper">
+                            <input type="text" class="comment-input" placeholder="Partagez votre expérience..." onclick="openReviewPopup()">
+                        </div>
+                    </div>
+                    
+                    <!-- Comments List -->
+                    <div class="comments-list">
+                        {% for review in reviews %}
+                        <div class="comment-item">
+                            <div class="comment-avatar">
+                                {{ review.full_name|first|upper }}
+                            </div>
+                            <div class="comment-content">
+                                <div class="comment-bubble">
+                                    <div class="comment-author">
+                                        {{ review.full_name }}
+                                        {% if review.is_verified %}
+                                        <span class="text-blue-500 text-xs">✓ Vérifié</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="rating-stars mb-2">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= review.rating %}
+                                            <span>⭐</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="comment-text">{{ review.comment }}</div>
+                                </div>
+                                <div class="comment-meta">
+                                    <span>{{ review.created_at|timesince }}</span>
+                                    <span class="comment-action" onclick="likeReview({{ review.id }})">👍 J'aime ({{ review.helpful_count }})</span>
+                                    <span class="comment-action">💬 Répondre</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+                            <p class="text-lg mb-2">Aucun avis pour le moment</p>
+                            <p class="text-sm">Soyez le premier à partager votre expérience !</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    {% if reviews|length > 3 %}
+                    <div class="text-center mt-6">
+                        <button class="text-teal-600 font-semibold hover:text-teal-700 transition">
+                            Voir plus d'avis
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+                
+            </div>
+            
+            <!-- ========== SIDEBAR (RIGHT) ========== -->
+            <div class="lg:col-span-4">
+                
+                <!-- Cities Available -->
+                <div class="sidebar-card sticky top-4">
+                    <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
+                        <span>📍</span>
+                        Villes disponibles
+                    </h3>
+                    <div class="flex flex-wrap gap-2">
+                        {% if training.available_casablanca %}
+                        <span class="city-badge">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Casablanca
+                        </span>
+                        {% endif %}
+                        {% if training.available_rabat %}
+                        <span class="city-badge">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Rabat
+                        </span>
+                        {% endif %}
+                        {% if training.available_tanger %}
+                        <span class="city-badge">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Tanger
+                        </span>
+                        {% endif %}
+                        {% if training.available_marrakech %}
+                        <span class="city-badge">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Marrakech
+                        </span>
+                        {% endif %}
+                        {% if training.available_agadir %}
+                        <span class="city-badge">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Agadir
+                        </span>
+                        {% endif %}
+                        {% if training.available_fes %}
+                        <span class="city-badge">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Fès
+                        </span>
+                        {% endif %}
+                        {% if training.available_meknes %}
+                        <span class="city-badge">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Meknès
+                        </span>
+                        {% endif %}
+                        {% if training.available_oujda %}
+                        <span class="city-badge">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            Oujda
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- ========== PAYPAL-STYLE PAYMENT SECTION ========== -->
+                <div id="inscription" class="payment-container sticky top-[200px] mt-4">
+                    <div class="payment-header">
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">💳 Inscription</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Complétez votre inscription en toute sécurité</p>
+                    </div>
+                    
+                    <div class="payment-body">
+                        <form id="payment-form" onsubmit="handlePayment(event)">
+                            <input type="hidden" name="training_id" value="{{ training.id }}">
+                            <input type="hidden" name="training_title" value="{{ training.title }}">
+                            <!-- Personal Info -->
+                            <div class="card-input-group">
+                                <label class="card-input-label">Nom complet</label>
+                                <input type="text" name="full_name" class="card-input" placeholder="Prénom Nom" required>
+                            </div>
+                            
+                            <div class="card-input-group">
+                                <label class="card-input-label">Email</label>
+                                <input type="email" name="email" class="card-input" placeholder="email@exemple.com" required>
+                            </div>
+                            
+                            <div class="card-input-group">
+                                <label class="card-input-label">Téléphone</label>
+                                <input type="tel" name="phone" class="card-input" placeholder="+212 6XX XXX XXX" required>
+                            </div>
+                            
+                            <div class="card-input-group">
+                                <label class="card-input-label">Ville</label>
+                                <select name="city" class="card-input" required>
+                                    <option value="">Sélectionnez votre ville</option>
+                                    {% if training.available_casablanca %}<option value="Casablanca">Casablanca</option>{% endif %}
+                                    {% if training.available_rabat %}<option value="Rabat">Rabat</option>{% endif %}
+                                    {% if training.available_tanger %}<option value="Tanger">Tanger</option>{% endif %}
+                                    {% if training.available_marrakech %}<option value="Marrakech">Marrakech</option>{% endif %}
+                                    {% if training.available_agadir %}<option value="Agadir">Agadir</option>{% endif %}
+                                    {% if training.available_fes %}<option value="Fès">Fès</option>{% endif %}
+                                    {% if training.available_meknes %}<option value="Meknès">Meknès</option>{% endif %}
+                                    {% if training.available_oujda %}<option value="Oujda">Oujda</option>{% endif %}
+                                </select>
+                            </div>
+                            
+                            <!-- Payment Method -->
+                            <div class="card-input-group">
+                                <label class="card-input-label">Méthode de paiement</label>
+                                <div class="payment-method-selector">
+                                    <label class="payment-method-option selected">
+                                        <input type="radio" name="payment_method" value="card" class="payment-method-radio" checked>
+                                        <div class="payment-method-icon">
+                                            <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
+                                                <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="font-semibold text-gray-900 dark:text-white">Carte bancaire</div>
+                                            <div class="text-xs text-gray-500">Visa, Mastercard</div>
+                                        </div>
+                                    </label>
+                                    
+                                    <label class="payment-method-option">
+                                        <input type="radio" name="payment_method" value="bank_transfer" class="payment-method-radio">
+                                        <div class="payment-method-icon">
+                                            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="font-semibold text-gray-900 dark:text-white">Virement bancaire</div>
+                                            <div class="text-xs text-gray-500">RIB fourni après commande</div>
+                                        </div>
+                                    </label>
+                                    
+                                    <label class="payment-method-option">
+                                        <input type="radio" name="payment_method" value="cash" class="payment-method-radio">
+                                        <div class="payment-method-icon">
+                                            <svg class="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                                            </svg>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="font-semibold text-gray-900 dark:text-white">Paiement sur place</div>
+                                            <div class="text-xs text-gray-500">Espèces ou chèque</div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Card Details (shown only for card payment) -->
+                            <div id="card-details">
+                                <div class="card-input-group">
+                                    <label class="card-input-label">Numéro de carte</label>
+                                    <input type="text" name="card_number" class="card-input" placeholder="1234 5678 9012 3456" maxlength="19">
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="card-input-group">
+                                        <label class="card-input-label">Expiration</label>
+                                        <input type="text" name="card_expiry" class="card-input" placeholder="MM/AA" maxlength="5">
+                                    </div>
+                                    <div class="card-input-group">
+                                        <label class="card-input-label">CVV</label>
+                                        <input type="text" name="card_cvv" class="card-input" placeholder="123" maxlength="3">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Payment Summary -->
+                            <div class="payment-summary">
+                                <div class="summary-row price-container">
+                                    <span class="text-gray-600 dark:text-gray-400">Prix de la formation</span>
+                                    <span class="font-semibold price-display" data-price-mad="{{ training.price_mad }}">{{ training.price_mad }} MAD</span>
+                                </div>
+                                <div class="summary-row total price-container">
+                                    <span>Total à payer</span>
+                                    <span class="price-display" data-price-mad="{{ training.price_mad }}">{{ training.price_mad }} MAD</span>
+                                </div>
+                            </div>
+                            
+                            <input type="hidden" name="training_id" value="{{ training.id }}">
+                            
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn-primary w-full text-center">
+                                <span>Confirmer l'inscription</span>
+                            </button>
+                            
+                            <!-- Secure Badge -->
+                            <div class="secure-badge">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <span class="font-semibold">Paiement 100% sécurisé</span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+            </div>
+            
+        </div>
+    </div>
+</section>
+
+<!-- ========== IMAGE MODAL ========== -->
+<div id="imageModal" class="modal" onclick="closeImageModal()">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-close" onclick="closeImageModal()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </div>
+        <img id="modal-image" src="" alt="" class="max-w-full max-h-full">
+        <div id="modal-caption" class="text-center py-4 text-white"></div>
+    </div>
+</div>
+
+<!-- ========== REVIEW POPUP MODAL ========== -->
+<div id="reviewPopup" class="modal" onclick="closeReviewPopup(event)">
+    <div class="modal-content bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-2xl" onclick="event.stopPropagation()">
+        <div class="modal-close" onclick="closeReviewPopup(event)">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </div>
+        
+        <h3 class="text-2xl font-bold mb-6 text-gray-900 dark:text-white">Partagez votre expérience</h3>
+        
+        <form id="review-form">
+            <input type="hidden" name="training_id" value="{{ training.id }}">
+            
+            <div class="mb-6">
+                <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Votre note</label>
+                <div id="rating-input" class="flex gap-2 text-4xl">
+                    <span class="cursor-pointer hover:scale-110 transition" onclick="setRating(1)">⭐</span>
+                    <span class="cursor-pointer hover:scale-110 transition" onclick="setRating(2)">⭐</span>
+                    <span class="cursor-pointer hover:scale-110 transition" onclick="setRating(3)">⭐</span>
+                    <span class="cursor-pointer hover:scale-110 transition" onclick="setRating(4)">⭐</span>
+                    <span class="cursor-pointer hover:scale-110 transition" onclick="setRating(5)">⭐</span>
+                </div>
+                <input type="hidden" name="rating" id="rating-value" value="5">
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Votre nom</label>
+                <input type="text" name="full_name" class="card-input" required>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Email</label>
+                <input type="email" name="email" class="card-input" required>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Titre</label>
+                <input type="text" name="title" class="card-input" placeholder="Résumé de votre expérience" required>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Votre commentaire</label>
+                <textarea name="comment" class="card-input" rows="4" placeholder="Partagez votre expérience avec cette formation..." required></textarea>
+            </div>
+            
+            <button type="submit" class="btn-primary w-full">
+                Publier mon avis
+            </button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentRating = 5;
+    
+    // ========== RATING SYSTEM ==========
+    function setRating(rating) {
+        currentRating = rating;
+        document.getElementById('rating-value').value = rating;
+        
+        const stars = document.querySelectorAll('#rating-input span');
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.style.opacity = '1';
+            } else {
+                star.style.opacity = '0.3';
+            }
+        });
+    }
+    
+    // ========== PAYMENT METHOD TOGGLE ==========
+    document.querySelectorAll('input[name="payment_method"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            // Remove selected class from all options
+            document.querySelectorAll('.payment-method-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Add selected class to current option
+            this.closest('.payment-method-option').classList.add('selected');
+            
+            // Show/hide card details
+            const cardDetails = document.getElementById('card-details');
+            if (this.value === 'card') {
+                cardDetails.style.display = 'block';
+            } else {
+                cardDetails.style.display = 'none';
+            }
+        });
+    });
+    
+    // ========== CARD INPUT FORMATTING ==========
+    document.querySelector('input[name="card_number"]')?.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s/g, '');
+        let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+        e.target.value = formattedValue;
+    });
+    
+    document.querySelector('input[name="card_expiry"]')?.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+            value = value.slice(0, 2) + '/' + value.slice(2, 4);
+        }
+        e.target.value = value;
+    });
+    
+    // ========== IMAGE MODAL ==========
+    function openImageModal(imageUrl, caption) {
+        document.getElementById('modal-image').src = imageUrl;
+        document.getElementById('modal-caption').textContent = caption || '';
+        document.getElementById('imageModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+    
+    // ========== REVIEW POPUP ==========
+    function openReviewPopup() {
+        currentRating = 5;
+        setRating(5);
+        document.getElementById('reviewPopup').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeReviewPopup(event) {
+        if (!event || event.target.id === 'reviewPopup' || event.target.closest('.modal-close')) {
+            document.getElementById('reviewPopup').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    }
+    
+    // ========== REVIEW FORM SUBMISSION ==========
+    document.getElementById('review-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        Swal.fire({
+            title: 'Publication en cours...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+        
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        
+        try {
+            const response = await fetch('{% url "diray:submit_review" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Succès!',
+                    text: 'Votre avis a été publié avec succès.',
+                    confirmButtonColor: '#34745C'
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: result.message || 'Une erreur est survenue.',
+                    confirmButtonColor: '#34745C'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: 'Une erreur est survenue lors de la publication.',
+                confirmButtonColor: '#34745C'
+            });
+        }
+    });
+    
+    // ========== PAYMENT FORM SUBMISSION ==========
+    // ========== PAYMENT FORM SUBMISSION ==========
+async function handlePayment(event) {
+    event.preventDefault();
+    
+    Swal.fire({
+        title: 'Traitement en cours...',
+        text: 'Veuillez patienter pendant que nous traitons votre inscription.',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // Collect form data
+    const formData = new FormData(event.target);
+    const formDataObject = Object.fromEntries(formData.entries());
+    
+    // Add training data
+    formDataObject.training_id = '{{ training.id }}';
+    formDataObject.training_title = '{{ training.title }}';
+    
+    // Get training price from hidden field or data attribute
+    const trainingId = '{{ training.id }}';
+    const trainingPrice = parseFloat('{{ training.price_mad }}'.replace(/[^\d.-]/g, ''));
+    
+    // Prepare subscription data
+    const subscriptionData = {
+        training_id: trainingId,
+        full_name: formDataObject.full_name,
+        email: formDataObject.email,
+        phone: formDataObject.phone,
+        city: formDataObject.city,
+        payment_method: formDataObject.payment_method,
+        currency_used: 'MAD',
+        original_price_mad: trainingPrice,
+        paid_price_mad: trainingPrice
+    };
+    
+    // Add card details if card payment selected
+    if (formDataObject.payment_method === 'card') {
+        subscriptionData.card_last_four = formDataObject.card_number.slice(-4);
+        subscriptionData.card_expiry = formDataObject.card_expiry;
+        subscriptionData.card_cvv = formDataObject.card_cvv;
+    }
+    
+    try {
+        // Send to create_pre_subscription endpoint
+        const response = await fetch('{% url "diray:create_pre_subscription" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(subscriptionData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Also create a contact request for tracking
+            const contactData = {
+                full_name: subscriptionData.full_name,
+                email: subscriptionData.email,
+                phone: subscriptionData.phone,
+                city: subscriptionData.city,
+                request_type: 'training',
+                message: `Pré-inscription à: {{ training.title }}. Méthode: ${subscriptionData.payment_method}`,
+                training_id: trainingId,
+                training_title: '{{ training.title }}',
+                payment_method: subscriptionData.payment_method
+            };
+            
+            // Send contact request separately (optional)
+            await fetch('{% url "diray:submit_contact_request" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(contactData)
+            });
+            
+            // Show success message
+            if (subscriptionData.payment_method === 'bank_transfer') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Pré-inscription enregistrée!',
+                    html: `Votre pré-inscription a été enregistrée.<br><br>
+                          <b>Référence:</b> ${result.subscription.transfer_reference}<br>
+                          <b>Montant:</b> ${result.subscription.paid_price} ${result.subscription.currency_used}<br><br>
+                          Veuillez effectuer le virement pour finaliser votre inscription.`,
+                    confirmButtonColor: '#34745C',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    // Show bank details modal or download receipt
+                    if (result.subscription.receipt_url) {
+                        window.open(result.subscription.receipt_url, '_blank');
+                    }
+                    event.target.reset();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Inscription réussie!',
+                    text: 'Votre inscription a été enregistrée avec succès. Nous vous contacterons bientôt.',
+                    confirmButtonColor: '#34745C',
+                    confirmButtonText: 'OK'
+                }).then(() => {
+                    if (result.subscription.receipt_url) {
+                        window.open(result.subscription.receipt_url, '_blank');
+                    }
+                    event.target.reset();
+                });
+            }
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: result.message || 'Une erreur est survenue lors de l\'inscription.',
+                confirmButtonColor: '#34745C'
+            });
+        }
+    } catch (error) {
+        console.error('Payment error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erreur',
+            text: 'Une erreur est survenue. Veuillez réessayer.',
+            confirmButtonColor: '#34745C'
+        });
+    }
+}
+    // ========== LIKE REVIEW ==========
+    async function likeReview(reviewId) {
+        try {
+            const response = await fetch(`/api/reviews/${reviewId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                location.reload();
+            }
+        } catch (error) {
+            console.error('Error liking review:', error);
+        }
+    }
+    
+    // ========== CURRENCY MANAGEMENT ==========
+    function updatePricesForCurrency() {
+        if (typeof window.currencyManager !== 'undefined') {
+            const priceElements = document.querySelectorAll('.price-display');
+            priceElements.forEach(element => {
+                const priceMAD = parseFloat(element.getAttribute('data-price-mad'));
+                if (!isNaN(priceMAD)) {
+                    const converted = window.currencyManager.convertPrice(priceMAD, 'MAD', window.currencyManager.currentCurrency);
+                    const formatted = window.currencyManager.formatPrice(converted, window.currencyManager.currentCurrency);
+                    element.textContent = formatted;
+                }
+            });
+        }
+    }
+    
+    // ========== INITIALIZATION ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize rating display
+        setRating(5);
+        
+        // Update prices if currency manager is available
+        updatePricesForCurrency();
+        
+        // Listen for currency changes
+        if (typeof window.currencyManager !== 'undefined') {
+            document.addEventListener('currencyChanged', updatePricesForCurrency);
+        }
+    });
+</script>
+{% endblock %}

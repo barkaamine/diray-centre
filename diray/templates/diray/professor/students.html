@@ -1,0 +1,116 @@
+{% extends 'diray/professor/base_professor.html' %}
+{% load static %}
+
+{% block header_title %}Gestion des Étudiants{% endblock %}
+{% block header_subtitle %}Suivi détaillé de votre cohorte et progrès académiques.{% endblock %}
+
+{% block professor_content %}
+<div class="space-y-8">
+    <!-- Header with Stats -->
+    <div class="glass-card p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+            <div class="size-12 rounded-xl bg-brand-light text-brand flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl">school</span>
+            </div>
+            <div>
+                <h2 class="text-xs font-black uppercase tracking-widest opacity-50 mb-1" style="color: var(--prof-text-muted);">Cohorte Active</h2>
+                <div class="flex items-center gap-2">
+                    <span class="text-xl font-black tracking-tight" style="color: var(--prof-text-main);">
+                        {% if selected_session %}
+                            {{ selected_session.city }}<span class="opacity-50 mx-2">•</span>{{ selected_session.start_date|date:"F Y" }}
+                        {% else %}
+                            Toutes Sessions
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-hover border border-prof">
+            <span class="text-2xl font-black text-brand">{{ students.count }}</span>
+            <span class="text-xs font-bold uppercase tracking-widest opacity-70" style="color: var(--prof-text-muted);">Inscrits</span>
+        </div>
+    </div>
+
+    <!-- Students Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for student in students %}
+        <div class="glass-card group overflow-hidden hover:-translate-y-1 transition-all duration-300">
+            <!-- Card Header Gradient -->
+            <div class="h-1 bg-gradient-to-r from-brand to-brand-light opacity-50"></div>
+            
+            <div class="p-6">
+                <div class="flex items-start gap-4 mb-6">
+                    <div class="size-16 rounded-2xl bg-surface-hover text-brand flex items-center justify-center font-black text-xl shadow-inner group-hover:scale-105 transition-transform">
+                        {% if student.profile.profile_picture %}
+                        <img src="{{ student.profile.profile_picture }}" class="size-full object-cover rounded-2xl">
+                        {% else %}
+                        {{ student.profile.full_name|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h3 class="text-lg font-black tracking-tight mb-1 truncate" style="color: var(--prof-text-main);">{{ student.profile.full_name }}</h3>
+                        <p class="text-xs font-medium truncate opacity-60 mb-2" style="color: var(--prof-text-muted);">{{ student.user.email }}</p>
+                        <span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md badge-success text-[10px] font-bold uppercase tracking-wider">
+                            <span class="size-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                            Actif
+                        </span>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Formations -->
+                    <div class="space-y-2">
+                        <p class="text-[9px] font-black uppercase tracking-widest opacity-40" style="color: var(--prof-text-muted);">Formations</p>
+                        <div class="flex flex-wrap gap-2">
+                            {% for formation in student.authorized_formations.all %}
+                            <span class="px-2 py-1 bg-surface-hover border border-prof rounded-lg text-[10px] font-bold uppercase tracking-wide opacity-80" style="color: var(--prof-text-main);">
+                                {{ formation.title|truncatechars:18 }}
+                            </span>
+                            {% empty %}
+                            <span class="text-[10px] italic opacity-40" style="color: var(--prof-text-muted);">Aucune formation</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Contact Details -->
+                    <div class="grid grid-cols-2 gap-3 pt-4 border-t border-prof">
+                        <div>
+                            <p class="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1" style="color: var(--prof-text-muted);">Ville</p>
+                            <p class="text-xs font-bold" style="color: var(--prof-text-main);">{{ student.profile.city|default:"—" }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black uppercase tracking-widest opacity-40 mb-1" style="color: var(--prof-text-muted);">Contact</p>
+                            <p class="text-xs font-bold truncate" style="color: var(--prof-text-main);">{{ student.profile.phone_number|default:"—" }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="mt-6 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <a href="mailto:{{ student.user.email }}" class="size-9 rounded-xl border border-prof flex items-center justify-center text-muted hover:text-brand hover:border-brand transition-colors" style="color: var(--prof-text-muted);">
+                            <span class="material-symbols-outlined text-lg">mail</span>
+                        </a>
+                        {% if student.profile.phone_number %}
+                        <a href="https://wa.me/{{ student.profile.phone_number }}" target="_blank" 
+                           class="size-9 rounded-xl border border-prof flex items-center justify-center text-muted hover:text-green-500 hover:border-green-500 transition-colors" style="color: var(--prof-text-muted);">
+                            <span class="material-symbols-outlined text-lg">chat</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                    <!-- Removed Dossier Suivis Button as requested -->
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full py-20 text-center">
+            <div class="size-20 rounded-full bg-surface-hover flex items-center justify-center mx-auto mb-6 opacity-50">
+                <span class="material-symbols-outlined text-4xl" style="color: var(--prof-text-muted);">person_off</span>
+            </div>
+            <h3 class="text-xl font-black mb-2" style="color: var(--prof-text-main);">Aucun étudiant trouvé</h3>
+            <p class="text-sm opacity-60" style="color: var(--prof-text-muted);">Cette session ne compte actuellement aucun inscrit.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

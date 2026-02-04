@@ -1,0 +1,872 @@
+<!-- templates/diray/partials/header.html - FIXED Z-INDEX & EVENT PROPAGATION -->
+<header class="sticky top-0 z-50 w-full bg-white/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-neutral-100 dark:border-neutral-800">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+        <div class="flex items-center gap-6 lg:gap-10">
+            <!-- Logo -->
+            <a class="flex items-center gap-2 group" href="{% url 'diray:home' %}">
+                <img 
+                    src="https://www.diray-formation.com/public/images/diray.png" 
+                    alt="Diray Centre Logo" 
+                    class="h-10 w-auto lg:h-12"
+                    loading="eager"
+                    onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjQwIiB2aWV3Qm94PSIwIDAgMTIwIDQwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik0xMCAyMEg0MFYzMEgxMFYyMFoiIGZpbGw9IiMzNDc0NUMiLz48cGF0aCBkPSJNNDAgMTBINzBWMzBINDBWMTBaIiBmaWxsPSIjMDA1NkIzIi8+PHBhdGggZD0iTTcwIDBIMTAwVjMwSDcwVjBaIiBmaWxsPSIjQzVBMDU5Ii8+PHRleHQgeD0iMTA1IiB5PSIyNSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE0IiBmaWxsPSIjMTQxNDE0IiBmb250LXdlaWdodD0iYm9sZCI+RElSQVk8L3RleHQ+PC9zdmc+'"
+                >
+            </a>
+            
+            <!-- Desktop Navigation -->
+            <nav class="hidden lg:flex items-center gap-6 2xl:gap-8">
+                <a class="text-sm font-semibold hover:text-primary dark:hover:text-white transition-colors duration-200 {% if request.path == '/' %}active-nav{% endif %}" 
+                   href="{% url 'diray:home' %}">Accueil</a>
+                <a class="text-sm font-semibold hover:text-primary dark:hover:text-white transition-colors duration-200 {% if '/formations/' in request.path %}active-nav{% endif %}" 
+                   href="{% url 'diray:training_catalog' %}">Formations</a>
+                <a class="text-sm font-semibold hover:text-primary dark:hover:text-white transition-colors duration-200 {% if '/migration/' in request.path %}active-nav{% endif %}" 
+                   href="{% url 'diray:migration_services' %}">Migration</a>
+                <a class="text-sm font-semibold hover:text-primary dark:hover:text-white transition-colors duration-200 {% if '/centres-contact/' in request.path %}active-nav{% endif %}" 
+                   href="{% url 'diray:contact_centers' %}">Contact</a>
+            </nav>
+        </div>
+        
+        <!-- Desktop buttons -->
+        <div class="hidden lg:flex items-center gap-3 lg:gap-6">
+            <!-- Language Switcher -->
+            <div class="relative group">
+                <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-accent-green/10 dark:hover:bg-accent-green/20 transition-colors text-sm font-bold">
+                    <span>🇫🇷 FR</span>
+                    <span class="icon-arrow">▼</span>
+                </button>
+                <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-xl shadow-xl p-2 min-w-[120px] z-50 
+                            before:absolute before:-top-2 before:left-0 before:w-full before:h-2 before:content-['']">
+                    <a class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg" href="#">
+                        <span>🇫🇷</span> Français
+                    </a>
+                    <a class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg font-arabic text-right" href="#">
+                        <span>🇲🇦</span> العربية
+                    </a>
+                    <a class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg" href="#">
+                        <span>🇬🇧</span> English
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Currency Switcher -->
+            <div class="relative group currency-selector">
+                <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-accent-green/10 dark:hover:bg-accent-green/20 transition-colors text-sm font-bold active-currency">
+                    <span class="current-currency">MAD</span>
+                    <span class="icon-arrow">▼</span>
+                </button>
+                <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-xl shadow-xl p-2 min-w-[150px] z-50 currency-dropdown
+                            before:absolute before:-top-2 before:left-0 before:w-full before:h-2 before:content-['']">
+                    <a class="currency-option flex items-center justify-between px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg" data-currency="MAD" href="#">
+                        <span>🇲🇦 MAD</span>
+                        <span class="text-xs text-neutral-500">Dirham</span>
+                    </a>
+                    <a class="currency-option flex items-center justify-between px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg" data-currency="EUR" href="#">
+                        <span>🇪🇺 EUR</span>
+                        <span class="text-xs text-neutral-500">Euro</span>
+                    </a>
+                    <a class="currency-option flex items-center justify-between px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg" data-currency="USD" href="#">
+                        <span>🇺🇸 USD</span>
+                        <span class="text-xs text-neutral-500">Dollar</span>
+                    </a>
+                    <a class="currency-option flex items-center justify-between px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg" data-currency="GBP" href="#">
+                        <span>🇬🇧 GBP</span>
+                        <span class="text-xs text-neutral-500">Livre</span>
+                    </a>
+                    <a class="currency-option flex items-center justify-between px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg" data-currency="CAD" href="#">
+                        <span>🇨🇦 CAD</span>
+                        <span class="text-xs text-neutral-500">Dollar</span>
+                    </a>
+                    <a class="currency-option flex items-center justify-between px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg" data-currency="AED" href="#">
+                        <span>🇦🇪 AED</span>
+                        <span class="text-xs text-neutral-500">Dirham</span>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Theme Toggle -->
+            <button class="size-10 flex items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400" onclick="toggleTheme()">
+                <span id="theme-icon" class="icon-theme">☀</span>
+            </button>
+            
+            <!-- Notification Bell -->
+            {% if user.is_authenticated and user.profile.status in 'ACTIVE,PENDING' %}
+            <div class="relative group">
+                <button class="size-10 flex items-center justify-center rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 relative">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span id="notification-badge" class="{% if unread_notifications_count == 0 %}hidden{% endif %} absolute top-2 right-2 size-4 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                        {{ unread_notifications_count }}
+                    </span>
+                </button>
+                <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-xl shadow-xl p-2 min-w-[300px] z-50
+                            before:absolute before:-top-2 before:left-0 before:w-full before:h-2 before:content-['']">
+                    <div class="p-3 border-b border-neutral-100 dark:border-neutral-700">
+                        <h3 class="font-bold text-sm">Notifications</h3>
+                    </div>
+                    <div id="notification-menu" class="max-h-[300px] overflow-y-auto">
+                        {% for note in global_notifications %}
+                        <a href="{% url 'diray:mark_notification_read' note.id %}" class="block p-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition">
+                            <div class="font-bold text-xs mb-1">{{ note.title }}</div>
+                            <div class="text-xs text-neutral-500 line-clamp-2">{{ note.message }}</div>
+                            <div class="text-[10px] text-neutral-400 mt-1">{{ note.created_at|timesince }} ago</div>
+                        </a>
+                        {% empty %}
+                        <div class="p-8 text-center text-xs text-neutral-500 empty-msg">Aucune notification</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Auth & Contact Buttons (Simulated Logged-in for Guests) -->
+            <div class="relative group">
+                <button class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+                    {% if user.is_authenticated and user.profile.profile_picture %}
+                    <img src="{{ user.profile.profile_picture }}" alt="{{ user.first_name }}" class="size-8 rounded-full object-cover border-2 border-accent-green">
+                    {% else %}
+                    <span class="size-8 rounded-full bg-accent-green text-white flex items-center justify-center font-bold text-sm">
+                        {% if user.is_authenticated %}
+                        {{ user.first_name|first|default:user.username|first|upper }}
+                        {% else %}
+                        <span class="material-symbols-outlined text-sm">person</span>
+                        {% endif %}
+                    </span>
+                    {% endif %}
+                    <span class="text-sm font-semibold hidden xl:block">
+                        {% if user.is_authenticated %}
+                        {{ user.first_name|default:user.username }}
+                        {% else %}
+                        Mon Compte
+                        {% endif %}
+                    </span>
+                    <span class="icon-arrow">▼</span>
+                </button>
+                <div class="absolute right-0 top-full mt-1 hidden group-hover:block bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 rounded-xl shadow-xl p-2 min-w-[200px] z-50
+                            before:absolute before:-top-2 before:left-0 before:w-full before:h-2 before:content-['']">
+                    {% if user.is_authenticated and user.profile.role == 'PROFESSOR' %}
+                    <a class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg text-accent-green font-bold" href="{% url 'diray:professor_dashboard' %}">
+                        <span class="material-symbols-outlined text-lg">admin_panel_settings</span> Tableau de Bord Prof
+                    </a>
+                    {% endif %}
+                    
+                    <a class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg" href="{% url 'diray:dashboard' %}">
+                        <span class="material-symbols-outlined text-lg">dashboard</span> Mon Espace
+                    </a>
+                    
+                    <a class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg" href="{% if user.is_authenticated %}{% url 'diray:student_profile' %}{% else %}{% url 'diray:dashboard' %}{% endif %}">
+                        <span class="material-symbols-outlined text-lg">person</span> Mon Profil
+                    </a>
+
+                    <a class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg" href="{% url 'diray:dashboard' %}#formations">
+                        <span class="material-symbols-outlined text-lg">school</span> Mes Formations
+                    </a>
+
+                    <div class="h-px bg-neutral-100 dark:bg-neutral-800 my-1"></div>
+                    
+                    {% if user.is_authenticated %}
+                    <form action="{% url 'diray:logout' %}" method="post" class="w-full">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 rounded-lg text-left">
+                            <span class="material-symbols-outlined text-lg">logout</span> Déconnexion
+                        </button>
+                    </form>
+                    {% else %}
+                    <a class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg font-bold text-accent-green" href="{% url 'diray:login' %}">
+                        <span class="material-symbols-outlined text-lg">login</span> Connexion
+                    </a>
+                    <a class="flex items-center gap-2 px-3 py-2 text-sm hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg font-bold text-accent-blue" href="{% url 'diray:register' %}">
+                        <span class="material-symbols-outlined text-lg">person_add</span> S'inscrire
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-button" class="lg:hidden size-10 flex items-center justify-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
+            <span id="menu-icon" class="icon-menu">☰</span>
+        </button>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu lg:hidden" onclick="event.stopPropagation()">
+        <div class="mobile-menu-content">
+            <div class="mobile-menu-header">
+                <button id="mobile-menu-close" class="mobile-menu-close" onclick="closeMobileMenu()">
+                    <span class="icon-menu-close">×</span>
+                </button>
+            </div>
+            
+            <div class="mobile-menu-body">
+                <a class="mobile-menu-link {% if request.path == '/' %}active-nav{% endif %}" href="{% url 'diray:home' %}">Accueil</a>
+                <a class="mobile-menu-link {% if '/formations/' in request.path %}active-nav{% endif %}" href="{% url 'diray:training_catalog' %}">Formations</a>
+                <a class="mobile-menu-link {% if '/migration/' in request.path %}active-nav{% endif %}" href="{% url 'diray:migration_services' %}">Migration</a>
+                <a class="mobile-menu-link {% if '/centres-contact/' in request.path %}active-nav{% endif %}" href="{% url 'diray:contact_centers' %}">Contact</a>
+
+                <div class="mobile-menu-settings">
+                    <!-- Mobile Language Switcher -->
+                    <div class="mobile-menu-dropdown">
+                        <button id="mobile-language-button" class="mobile-menu-dropdown-button">
+                            <span class="flex items-center gap-2">
+                                <span>🇫🇷</span>
+                                <span>Français</span>
+                            </span>
+                            <span class="icon-arrow">▼</span>
+                        </button>
+                        <div id="mobile-language-menu" class="mobile-menu-dropdown-content">
+                            <a class="mobile-menu-dropdown-item" href="#">
+                                <span>🇫🇷</span> Français
+                            </a>
+                            <a class="mobile-menu-dropdown-item font-arabic text-right" href="#">
+                                <span>🇲🇦</span> العربية
+                            </a>
+                            <a class="mobile-menu-dropdown-item" href="#">
+                                <span>🇬🇧</span> English
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile Currency Switcher -->
+                    <div class="mobile-menu-dropdown">
+                        <button id="mobile-currency-button" class="mobile-menu-dropdown-button">
+                            <span class="flex items-center gap-2">
+                                <span class="currency-indicator">MAD</span>
+                                <span>- Dirham</span>
+                            </span>
+                            <span class="icon-arrow">▼</span>
+                        </button>
+                        <div id="mobile-currency-menu" class="mobile-menu-dropdown-content">
+                            <a class="mobile-menu-dropdown-item currency-option" data-currency="MAD" href="#">
+                                <span>🇲🇦 MAD</span>
+                                <span class="text-xs text-neutral-500">Dirham</span>
+                            </a>
+                            <a class="mobile-menu-dropdown-item currency-option" data-currency="EUR" href="#">
+                                <span>🇪🇺 EUR</span>
+                                <span class="text-xs text-neutral-500">Euro</span>
+                            </a>
+                            <a class="mobile-menu-dropdown-item currency-option" data-currency="USD" href="#">
+                                <span>🇺🇸 USD</span>
+                                <span class="text-xs text-neutral-500">Dollar</span>
+                            </a>
+                            <a class="mobile-menu-dropdown-item currency-option" data-currency="GBP" href="#">
+                                <span>🇬🇧 GBP</span>
+                                <span class="text-xs text-neutral-500">Livre</span>
+                            </a>
+                            <a class="mobile-menu-dropdown-item currency-option" data-currency="CAD" href="#">
+                                <span>🇨🇦 CAD</span>
+                                <span class="text-xs text-neutral-500">Dollar</span>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Mobile Theme Toggle -->
+                    <button class="mobile-menu-dropdown-button" onclick="toggleTheme()">
+                        <span class="flex items-center gap-2">
+                            <span id="mobile-theme-icon" class="icon-theme">☀</span>
+                            <span>Thème</span>
+                        </span>
+                        <span id="mobile-theme-label">Clair</span>
+                    </button>
+                    
+                    <!-- Mobile Auth Links (Simulated Logged-in) -->
+                    <a class="mobile-menu-link" href="{% url 'diray:dashboard' %}">
+                        <span class="flex items-center gap-2">
+                            <span class="material-symbols-outlined">dashboard</span> Mon Espace
+                        </span>
+                    </a>
+                    <a class="mobile-menu-link" href="{% if user.is_authenticated %}{% url 'diray:student_profile' %}{% else %}{% url 'diray:dashboard' %}{% endif %}">
+                        <span class="flex items-center gap-2">
+                            <span class="material-symbols-outlined">person</span> Mon Profil
+                        </span>
+                    </a>
+                    
+                    {% if user.is_authenticated %}
+                    <form action="{% url 'diray:logout' %}" method="post" class="w-full">
+                        {% csrf_token %}
+                        <button type="submit" class="mobile-menu-link w-full text-left text-red-600">
+                            <span class="flex items-center gap-2">
+                                <span class="material-symbols-outlined">logout</span> Déconnexion
+                            </span>
+                        </button>
+                    </form>
+                    {% else %}
+                    <a class="mobile-menu-link text-accent-green" href="{% url 'diray:login' %}">
+                        <span class="flex items-center gap-2">
+                            <span class="material-symbols-outlined">login</span> Connexion
+                        </span>
+                    </a>
+                    <a class="mobile-menu-link text-accent-blue" href="{% url 'diray:register' %}">
+                        <span class="flex items-center gap-2">
+                            <span class="material-symbols-outlined">person_add</span> S'inscrire
+                        </span>
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Mobile Contact Button -->
+                    <a class="mobile-menu-contact-button mt-4" href="#contact">
+                        <span class="icon-contact">✉</span>
+                        Nous contacter
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Inline CSS for mobile menu -->
+<style>
+    /* Mobile menu overlay - SITS BEHIND MENU */
+    .mobile-menu-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(2px);
+        z-index: 9998; /* BELOW MENU */
+    }
+    
+    .mobile-menu-overlay.active {
+        display: block;
+    }
+    
+    /* Mobile menu - SITS ABOVE OVERLAY */
+    .mobile-menu {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 85%;
+        max-width: 400px;
+        height: 100vh;
+        z-index: 9999; /* ABOVE OVERLAY */
+        pointer-events: none;
+    }
+    
+    .mobile-menu.open {
+        display: block;
+        pointer-events: auto;
+    }
+    
+    /* Mobile menu content - PREVENTS EVENT BUBBLING */
+    .mobile-menu-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15);
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: auto;
+        overflow-y: auto;
+    }
+    
+    .dark .mobile-menu-content {
+        background: #1e293b;
+    }
+    
+    .mobile-menu.open .mobile-menu-content {
+        transform: translateX(0);
+    }
+    
+    /* Mobile menu header */
+    .mobile-menu-header {
+        display: flex;
+        justify-content: flex-end;
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .dark .mobile-menu-header {
+        border-bottom-color: #374151;
+    }
+    
+    .mobile-menu-close {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: #f3f4f6;
+        color: #374151;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .dark .mobile-menu-close {
+        background: #374151;
+        color: #d1d5db;
+    }
+    
+    .mobile-menu-close:hover {
+        background: #e5e7eb;
+    }
+    
+    .dark .mobile-menu-close:hover {
+        background: #4b5563;
+    }
+    
+    /* Mobile menu body */
+    .mobile-menu-body {
+        padding: 1rem;
+    }
+    
+    .mobile-menu-link {
+        display: block;
+        padding: 1rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #374151;
+        border-radius: 8px;
+        transition: all 0.2s;
+        margin-bottom: 0.5rem;
+    }
+    
+    .dark .mobile-menu-link {
+        color: #d1d5db;
+    }
+    
+    .mobile-menu-link:hover {
+        background: #f3f4f6;
+        color: #34745C;
+    }
+    
+    .dark .mobile-menu-link:hover {
+        background: #374151;
+        color: #fff;
+    }
+    
+    /* Mobile menu settings */
+    .mobile-menu-settings {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .dark .mobile-menu-settings {
+        border-top-color: #374151;
+    }
+    
+    /* Mobile menu dropdowns */
+    .mobile-menu-dropdown {
+        position: relative;
+        margin-bottom: 0.75rem;
+    }
+    
+    .mobile-menu-dropdown-button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background: #f9fafb;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    
+    .dark .mobile-menu-dropdown-button {
+        background: #374151;
+        color: #d1d5db;
+    }
+    
+    .mobile-menu-dropdown-button:hover {
+        background: #e5e7eb;
+    }
+    
+    .dark .mobile-menu-dropdown-button:hover {
+        background: #4b5563;
+    }
+    
+    .mobile-menu-dropdown-content {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 0.25rem;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        z-index: 10000;
+        display: none;
+    }
+    
+    .dark .mobile-menu-dropdown-content {
+        background: #1f2937;
+        border-color: #4b5563;
+    }
+    
+    .mobile-menu-dropdown.open .mobile-menu-dropdown-content {
+        display: block;
+    }
+    
+    .mobile-menu-dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        color: #374151;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+    
+    .dark .mobile-menu-dropdown-item {
+        color: #d1d5db;
+    }
+    
+    .mobile-menu-dropdown-item:hover {
+        background: #f3f4f6;
+    }
+    
+    .dark .mobile-menu-dropdown-item:hover {
+        background: #374151;
+    }
+    
+    /* Mobile menu contact button */
+    .mobile-menu-contact-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: #0056b3;
+        color: white;
+        font-size: 0.875rem;
+        font-weight: 700;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: background 0.2s;
+        margin-top: 0.75rem;
+    }
+    
+    .mobile-menu-contact-button:hover {
+        background: #004494;
+    }
+    
+    /* Icon base styles */
+    .icon-arrow,
+    .icon-theme,
+    .icon-menu,
+    .icon-contact,
+    .icon-menu-close {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        font-size: 1.25em;
+        line-height: 1;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    
+    .icon-arrow {
+        font-size: 0.875em;
+    }
+    
+    /* Material Icons styling */
+    .material-icon-replacement {
+        font-family: 'Material Symbols Outlined', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        font-weight: normal;
+        font-style: normal;
+        font-size: 24px;
+        line-height: 1;
+        letter-spacing: normal;
+        text-transform: none;
+        display: inline-block;
+        white-space: nowrap;
+        word-wrap: normal;
+        direction: ltr;
+        -webkit-font-feature-settings: 'liga';
+        -webkit-font-smoothing: antialiased;
+        color: transparent;
+        user-select: none;
+    }
+    
+    .material-icon-replacement.loaded {
+        color: inherit;
+        transition: opacity 0.2s ease;
+    }
+</style>
+
+<!-- JavaScript for mobile menu -->
+<script>
+    (function() {
+        'use strict';
+        
+        // Mobile menu state
+        let isMobileMenuOpen = false;
+        
+        // Initialize mobile menu
+        function initMobileMenu() {
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenuClose = document.getElementById('mobile-menu-close');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+            
+            // Toggle mobile menu button
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleMobileMenu();
+                });
+            }
+            
+            // Close button inside menu
+            if (mobileMenuClose) {
+                mobileMenuClose.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeMobileMenu();
+                });
+            }
+            
+            // Close on overlay click
+            if (mobileMenuOverlay) {
+                mobileMenuOverlay.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    closeMobileMenu();
+                });
+            }
+            
+            // Close on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && isMobileMenuOpen) {
+                    closeMobileMenu();
+                }
+            });
+            
+            // Initialize dropdowns inside mobile menu
+            initMobileMenuDropdowns();
+        }
+        
+        // Initialize dropdowns inside mobile menu
+        function initMobileMenuDropdowns() {
+            // Language dropdown
+            const languageButton = document.getElementById('mobile-language-button');
+            const languageMenu = document.getElementById('mobile-language-menu');
+            
+            if (languageButton && languageMenu) {
+                languageButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Toggle language dropdown
+                    const parent = this.closest('.mobile-menu-dropdown');
+                    parent.classList.toggle('open');
+                    
+                    // Close other dropdowns
+                    closeOtherDropdowns(parent);
+                });
+                
+                // Prevent clicks inside dropdown from closing menu
+                languageMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+            
+            // Currency dropdown
+            const currencyButton = document.getElementById('mobile-currency-button');
+            const currencyMenu = document.getElementById('mobile-currency-menu');
+            
+            if (currencyButton && currencyMenu) {
+                currencyButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // Toggle currency dropdown
+                    const parent = this.closest('.mobile-menu-dropdown');
+                    parent.classList.toggle('open');
+                    
+                    // Close other dropdowns
+                    closeOtherDropdowns(parent);
+                });
+                
+                // Handle currency selection
+                currencyMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    const target = e.target.closest('.currency-option');
+                    if (target) {
+                        const currency = target.getAttribute('data-currency');
+                        if (currency && window.currencyManager) {
+                            window.currencyManager.setCurrency(currency);
+                        }
+                        // Close dropdown after selection
+                        this.closest('.mobile-menu-dropdown').classList.remove('open');
+                    }
+                });
+            }
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function() {
+                document.querySelectorAll('.mobile-menu-dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('open');
+                });
+            });
+        }
+        
+        // Close other dropdowns
+        function closeOtherDropdowns(activeDropdown) {
+            document.querySelectorAll('.mobile-menu-dropdown').forEach(dropdown => {
+                if (dropdown !== activeDropdown) {
+                    dropdown.classList.remove('open');
+                }
+            });
+        }
+        
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            if (isMobileMenuOpen) {
+                closeMobileMenu();
+            } else {
+                openMobileMenu();
+            }
+        }
+        
+        // Open mobile menu
+        function openMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+            const menuIcon = document.getElementById('menu-icon');
+            
+            if (mobileMenu) {
+                mobileMenu.classList.add('open');
+                mobileMenuOverlay.classList.add('active');
+                document.body.classList.add('overflow-hidden');
+                isMobileMenuOpen = true;
+                
+                if (menuIcon) {
+                    // Update icon to close
+                    if (menuIcon.previousElementSibling && menuIcon.previousElementSibling.classList.contains('material-icon-replacement')) {
+                        menuIcon.previousElementSibling.textContent = 'close';
+                    } else {
+                        menuIcon.textContent = '×';
+                    }
+                }
+            }
+        }
+        
+        // Close mobile menu
+        function closeMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+            const menuIcon = document.getElementById('menu-icon');
+            
+            if (mobileMenu) {
+                mobileMenu.classList.remove('open');
+                mobileMenuOverlay.classList.remove('active');
+                document.body.classList.remove('overflow-hidden');
+                isMobileMenuOpen = false;
+                
+                // Close all dropdowns
+                document.querySelectorAll('.mobile-menu-dropdown').forEach(dropdown => {
+                    dropdown.classList.remove('open');
+                });
+                
+                if (menuIcon) {
+                    // Update icon back to menu
+                    if (menuIcon.previousElementSibling && menuIcon.previousElementSibling.classList.contains('material-icon-replacement')) {
+                        menuIcon.previousElementSibling.textContent = 'menu';
+                    } else {
+                        menuIcon.textContent = '☰';
+                    }
+                }
+            }
+        }
+        
+        // Replace icons with Material Icons
+        function replaceIconsWithMaterial() {
+            // Check if Material Icons font is available
+            const testSpan = document.createElement('span');
+            testSpan.style.fontFamily = 'Material Symbols Outlined';
+            testSpan.style.position = 'absolute';
+            testSpan.style.visibility = 'hidden';
+            testSpan.textContent = 'check';
+            document.body.appendChild(testSpan);
+            
+            const materialIconsAvailable = window.getComputedStyle(testSpan).fontFamily.includes('Material Symbols Outlined');
+            document.body.removeChild(testSpan);
+            
+            if (!materialIconsAvailable) {
+                console.log('Material Icons font not available, keeping Unicode icons');
+                return;
+            }
+            
+            // Icon mapping
+            const iconReplacements = {
+                'icon-arrow': 'expand_more',
+                'icon-theme': 'light_mode',
+                'icon-menu': 'menu',
+                'icon-contact': 'mail',
+                'icon-menu-close': 'close'
+            };
+            
+            // Replace each icon type
+            Object.keys(iconReplacements).forEach(iconClass => {
+                const elements = document.querySelectorAll(`.${iconClass}`);
+                const materialIconName = iconReplacements[iconClass];
+                
+                elements.forEach(element => {
+                    // Create Material Icon
+                    const materialIcon = document.createElement('span');
+                    materialIcon.className = 'material-icon-replacement';
+                    materialIcon.textContent = materialIconName;
+                    materialIcon.setAttribute('aria-hidden', 'true');
+                    
+                    // Match font size
+                    const computedStyle = window.getComputedStyle(element);
+                    materialIcon.style.fontSize = computedStyle.fontSize;
+                    
+                    // Insert Material Icon
+                    element.parentNode.insertBefore(materialIcon, element);
+                    
+                    // Hide original Unicode icon
+                    element.style.display = 'none';
+                    
+                    // Show Material Icon after a brief delay
+                    setTimeout(() => {
+                        materialIcon.classList.add('loaded');
+                    }, 50);
+                });
+            });
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                initMobileMenu();
+                
+                // Replace icons with Material Icons
+                if (document.fonts && document.fonts.ready) {
+                    document.fonts.ready.then(() => {
+                        setTimeout(replaceIconsWithMaterial, 100);
+                    });
+                } else {
+                    setTimeout(replaceIconsWithMaterial, 500);
+                }
+            });
+        } else {
+            initMobileMenu();
+            setTimeout(replaceIconsWithMaterial, 100);
+        }
+        
+        // Expose functions globally
+        window.toggleMobileMenu = toggleMobileMenu;
+        window.openMobileMenu = openMobileMenu;
+        window.closeMobileMenu = closeMobileMenu;
+        
+    })();
+</script>

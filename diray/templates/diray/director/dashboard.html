@@ -1,0 +1,314 @@
+{% extends "diray/base.html" %}
+{% load static %}
+
+{% block title %}Director Hub - Vision & Analytics{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    :root {
+        --primary: #6366f1;
+        --sidebar-bg: #f8fafc;
+        --content-bg: #ffffff;
+        --border-color: #e2e8f0;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+    }
+
+    body {
+        background-color: var(--content-bg) !important;
+        color: var(--text-main) !important;
+        font-family: 'Inter', system-ui, sans-serif;
+        margin: 0;
+    }
+
+    .layout-wrapper {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    .dashboard-sidebar {
+        width: 280px;
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--border-color);
+        padding: 2rem 1rem;
+        position: fixed;
+        height: 100vh;
+        z-index: 100;
+    }
+
+    .sidebar-logo {
+        padding: 0 1rem 2rem;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary);
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 2rem;
+    }
+
+    .main-content {
+        flex: 1;
+        margin-left: 280px;
+        padding: 2rem 3rem;
+    }
+
+    .hub-header {
+        margin-bottom: 2.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .hub-title h1 {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--text-main);
+        letter-spacing: -0.02em;
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .kpi-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .kpi-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-weight: 800;
+        margin-bottom: 0.75rem;
+    }
+
+    .kpi-value {
+        font-size: 2.25rem;
+        font-weight: 900;
+        color: var(--text-main);
+    }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .chart-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        padding: 2rem;
+        height: 400px;
+    }
+
+    .btn-action {
+        padding: 0.75rem 1.25rem;
+        border-radius: 12px;
+        background: white;
+        border: 1px solid var(--border-color);
+        color: var(--text-main);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .btn-action:hover { background: #f8fafc; border-color: var(--primary); }
+
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .premium-table th {
+        padding: 1rem;
+        text-align: left;
+        color: var(--text-muted);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        font-weight: 800;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .premium-row td {
+        padding: 1.25rem 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1rem;
+        border-radius: 12px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .nav-item:hover { background: #f1f5f9; color: var(--text-main); }
+    .nav-item.active { background: var(--primary); color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="layout-wrapper">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-logo">Director Hub</div>
+        <div class="sidebar-nav">
+             <a href="#" class="nav-item active">
+                <span class="material-symbols-outlined">analytics</span>
+                Aperçu Global
+            </a>
+            <a href="{% url 'diray:assistant_dashboard' %}" class="nav-item">
+                <span class="material-symbols-outlined">dashboard_customize</span>
+                Assistant View
+            </a>
+            <a href="/admin/" target="_blank" class="nav-item">
+                <span class="material-symbols-outlined">settings</span>
+                Core Admin
+            </a>
+            <a href="{% url 'diray:logout' %}" class="nav-item" style="margin-top: auto; color: #ef4444;">
+                <span class="material-symbols-outlined">logout</span>
+                Déconnexion
+            </a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="hub-header">
+            <div class="hub-title">
+                <h1>Analyses & Vision</h1>
+                <p style="color: var(--text-muted);">Intelligence opérationnelle en temps réel</p>
+            </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Base Étudiants</div>
+                <div class="kpi-value">{{ total_students }}</div>
+            </div>
+            <div class="kpi-card" style="border-top: 4px solid #10b981;">
+                <div class="kpi-label">CA Global (MAD)</div>
+                <div class="kpi-value">{{ total_revenue|floatform:0 }}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Sessions Actives</div>
+                <div class="kpi-value">{{ active_sessions_count }}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Satisfaction Avg</div>
+                <div class="kpi-value">{{ avg_rating }}/5</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3 style="margin-bottom: 2rem; font-weight: 800;">Trafic (7j)</h3>
+                <canvas id="visitorsChart"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3 style="margin-bottom: 2rem; font-weight: 800;">Flux Financiers (7j)</h3>
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+            <div class="kpi-card">
+                <h3 style="margin-bottom: 1.5rem; font-weight: 800;">Flux d'Activité</h3>
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Étudiant</th>
+                            <th>Impact</th>
+                            <th>Formation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in recent_transactions %}
+                        <tr class="premium-row">
+                            <td>{{ t.payment_completed_at|date:"d/m | H:i" }}</td>
+                            <td style="font-weight: 700;">{{ t.full_name }}</td>
+                            <td style="color: #10b981; font-weight: 700;">+{{ t.paid_price_mad }}</td>
+                            <td style="color: var(--text-muted);">{{ t.training.title|truncatechars:20 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="kpi-card">
+                <h3 style="margin-bottom: 1.5rem; font-weight: 800;">Répartition / Ville</h3>
+                {% for city in city_stats %}
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8fafc; border-radius: 12px; margin-bottom: 0.75rem; border: 1px solid var(--border-color);">
+                    <span style="font-weight: 700;">{{ city.name }}</span>
+                    <span style="font-size: 1.25rem; font-weight: 900;">{{ city.student_count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    Chart.defaults.color = '#64748b';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+
+    const dates = JSON.parse('{{ chart_dates|safe }}');
+    const visitors = JSON.parse('{{ chart_visitors|safe }}');
+    const revenue = JSON.parse('{{ chart_revenue|safe }}');
+
+    new Chart(document.getElementById('visitorsChart'), {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Visiteurs',
+                data: visitors,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.05)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Revenue',
+                data: revenue,
+                backgroundColor: '#10b981',
+                borderRadius: 6
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+</script>
+{% endblock %}

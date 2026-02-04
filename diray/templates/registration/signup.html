@@ -1,0 +1,259 @@
+{% extends 'diray/base.html' %}
+{% load static %}
+
+{% block title %}Inscription - Diray Centre{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Standardized Form Input Styles */
+    .auth-input {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border-radius: 1rem;
+        border: 2px solid #f3f4f6;
+        background-color: #ffffff;
+        font-weight: 500;
+        transition: all 0.2s;
+        outline: none;
+    }
+    .dark .auth-input {
+        border-color: #374151;
+        background-color: #111827;
+        color: #ffffff;
+    }
+    .dark .auth-input:hover {
+        border-color: #4b5563;
+    }
+    .dark .auth-input:focus {
+        border-color: #34745C;
+        background-color: #030712;
+    }
+    .auth-input:focus {
+        border-color: #34745C;
+        box-shadow: 0 0 0 4px rgba(52, 116, 92, 0.1);
+    }
+    .auth-input::placeholder {
+        color: #9ca3af;
+    }
+    
+    /* Error state */
+    .auth-input-error {
+        border-color: #ef4444 !important;
+    }
+
+    /* Animation for errors */
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+    }
+    .animate-shake {
+        animation: shake 0.4s ease-in-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-stretch overflow-hidden">
+    <!-- Left Side - Brand Display (Hidden on Mobile/Tablet < LG) -->
+    <div class="hidden lg:flex lg:w-1/2 relative bg-neutral-900 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-accent-green/40 to-black/60 z-10"></div>
+        <img src="{% static 'images/auth_bg.png' %}" alt="Training Center" class="absolute inset-0 w-full h-full object-cover opacity-90 scale-105">
+        
+        <div class="relative z-20 flex flex-col justify-between p-16 w-full text-white">
+            <div>
+                <a href="{% url 'diray:home' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all font-semibold">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span>
+                    <span>Retour à l'accueil</span>
+                </a>
+            </div>
+            
+            <div class="max-w-xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-green/20 border border-accent-green/30 text-accent-green text-[10px] font-black uppercase tracking-widest mb-6">
+                    <span class="size-1.5 bg-accent-green rounded-full animate-pulse"></span>
+                    Nouveau Compte
+                </div>
+                <h1 class="text-6xl font-black mb-6 leading-[1.1] tracking-tighter">
+                    Rejoignez <br/>
+                    <span class="text-accent-green">l'Élite Pro.</span>
+                </h1>
+                <p class="text-xl text-white/70 max-w-sm leading-relaxed font-medium">
+                    Créez votre profil en quelques minutes et accédez à nos programmes certifiants.
+                </p>
+            </div>
+            
+            <div class="text-xs text-white/40">
+                <p>© {% now "Y" %} Diray Centre. Tous droits réservés.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side - Registration Form -->
+    <div class="w-full lg:w-1/2 bg-[#fcfcfc] dark:bg-[#0a0a0a] flex items-center justify-center p-6 sm:p-12 md:p-16 relative transition-colors duration-300 overflow-y-auto">
+        <div class="w-full max-w-lg py-8">
+            <!-- Mobile Header Logo -->
+            <div class="flex justify-center lg:justify-start mb-12">
+                <img src="https://www.diray-formation.com/public/images/diray.png" alt="Diray" class="h-10 w-auto">
+            </div>
+
+            <div class="mb-10 text-center lg:text-left">
+                <h2 class="text-4xl font-black text-neutral-900 dark:text-white leading-tight mb-3 tracking-tight">Inscription</h2>
+                <p class="text-neutral-500 dark:text-neutral-400 font-medium">
+                    Complétez vos informations pour démarrer l'aventure.
+                </p>
+            </div>
+
+            <form method="post" action="{% url 'diray:register' %}" class="space-y-6" id="registration-form">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm flex items-center gap-3 animate-shake">
+                    <span class="material-symbols-outlined shrink-0">report</span>
+                    <p class="font-bold">{{ form.non_field_errors.0 }}</p>
+                </div>
+                {% endif %}
+
+                <div class="space-y-5">
+                    <!-- Full Name -->
+                    <div class="space-y-2">
+                        <label for="{{ form.full_name.id_for_label }}" class="text-sm font-bold text-neutral-700 dark:text-neutral-300 ml-1">
+                            {{ form.full_name.label }} <span class="text-red-500 text-xs">*</span>
+                        </label>
+                        <input type="text" name="{{ form.full_name.name }}" id="{{ form.full_name.id_for_label }}" 
+                               value="{{ form.full_name.value|default:'' }}" 
+                               placeholder="Votre nom complet"
+                               class="auth-input {% if form.full_name.errors %}auth-input-error{% endif %}" required>
+                        {% if form.full_name.errors %}
+                        <p class="text-xs text-red-600 font-bold mt-1.5 ml-1">{{ form.full_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                        <!-- CIN -->
+                        <div class="space-y-2">
+                            <label for="{{ form.cin_or_passport.id_for_label }}" class="text-sm font-bold text-neutral-700 dark:text-neutral-300 ml-1 truncate block">
+                                {{ form.cin_or_passport.label }} <span class="text-neutral-400 text-[10px] font-medium">(Optional)</span>
+                            </label>
+                            <input type="text" name="{{ form.cin_or_passport.name }}" id="{{ form.cin_or_passport.id_for_label }}" 
+                                   value="{{ form.cin_or_passport.value|default:'' }}" 
+                                   placeholder="AB123456"
+                                   class="auth-input {% if form.cin_or_passport.errors %}auth-input-error{% endif %}">
+                            {% if form.cin_or_passport.errors %}
+                            <p class="text-xs text-red-600 font-bold mt-1.5 ml-1">{{ form.cin_or_passport.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <!-- Phone -->
+                        <div class="space-y-2">
+                            <label for="{{ form.phone_number.id_for_label }}" class="text-sm font-bold text-neutral-700 dark:text-neutral-300 ml-1 truncate block">
+                                {{ form.phone_number.label }} <span class="text-red-500 text-xs">*</span>
+                            </label>
+                            <input type="tel" name="{{ form.phone_number.name }}" id="{{ form.phone_number.id_for_label }}" 
+                                   value="{{ form.phone_number.value|default:'' }}" 
+                                   placeholder="0612345678"
+                                   class="auth-input {% if form.phone_number.errors %}auth-input-error{% endif %}" required>
+                            {% if form.phone_number.errors %}
+                            <p class="text-xs text-red-600 font-bold mt-1.5 ml-1">{{ form.phone_number.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                        <!-- City -->
+                        <div class="space-y-2">
+                            <label for="{{ form.city.id_for_label }}" class="text-sm font-bold text-neutral-700 dark:text-neutral-300 ml-1 truncate block">
+                                {{ form.city.label }} <span class="text-red-500 text-xs">*</span>
+                            </label>
+                            {{ form.city }}
+                        {% if form.city.errors %}
+                        <p class="text-xs text-red-600 font-bold mt-1.5 ml-1">{{ form.city.errors.0 }}</p>
+                        {% endif %}
+                        </div>
+                        <!-- Email -->
+                        <div class="space-y-2">
+                            <label for="{{ form.email.id_for_label }}" class="text-sm font-bold text-neutral-700 dark:text-neutral-300 ml-1 truncate block">
+                                {{ form.email.label }} <span class="text-red-500 text-xs">*</span>
+                            </label>
+                            <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}" 
+                                   value="{{ form.email.value|default:'' }}" 
+                                   placeholder="email@exemple.com"
+                                   class="auth-input {% if form.email.errors %}auth-input-error{% endif %}" required>
+                        {% if form.email.errors %}
+                        <p class="text-xs text-red-600 font-bold mt-1.5 ml-1">{{ form.email.errors.0 }}</p>
+                        {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                        <!-- Password -->
+                        <div class="space-y-2">
+                            <label for="{{ form.password.id_for_label }}" class="text-sm font-bold text-neutral-700 dark:text-neutral-300 ml-1 truncate block">
+                                {{ form.password.label }} <span class="text-red-500 text-xs">*</span>
+                            </label>
+                            <input type="password" name="{{ form.password.name }}" id="{{ form.password.id_for_label }}" 
+                                   placeholder="••••••••"
+                                   class="auth-input {% if form.password.errors %}auth-input-error{% endif %}" required>
+                        {% if form.password.errors %}
+                        <p class="text-xs text-red-600 font-bold mt-1.5 ml-1">{{ form.password.errors.0 }}</p>
+                        {% endif %}
+                        </div>
+                        <!-- Confirm Password -->
+                        <div class="space-y-2">
+                            <label for="{{ form.confirm_password.id_for_label }}" class="text-sm font-bold text-neutral-700 dark:text-neutral-300 ml-1 truncate block">
+                                {{ form.confirm_password.label }} <span class="text-red-500 text-xs">*</span>
+                            </label>
+                            <input type="password" name="{{ form.confirm_password.name }}" id="{{ form.confirm_password.id_for_label }}" 
+                                   placeholder="••••••••"
+                                   class="auth-input {% if form.confirm_password.errors %}auth-input-error{% endif %}" required>
+                        {% if form.confirm_password.errors %}
+                        <p class="text-xs text-red-600 font-bold mt-1.5 ml-1">{{ form.confirm_password.errors.0 }}</p>
+                        {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <label class="flex items-start gap-4 cursor-pointer group select-none">
+                        <div class="relative flex items-center mt-1 shrink-0">
+                            <input type="checkbox" name="terms" id="id_terms" required class="peer appearance-none size-5 rounded-lg border-2 border-neutral-200 dark:border-neutral-800 checked:bg-accent-green checked:border-accent-green transition-all cursor-pointer">
+                            <span class="material-symbols-outlined absolute opacity-0 peer-checked:opacity-100 text-white text-[16px] pointer-events-none left-[2px]">check</span>
+                        </div>
+                        <span class="text-xs text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors leading-relaxed">
+                            En créant un compte, vous acceptez nos <a href="#" class="font-bold text-accent-green hover:underline">Conditions Générales</a> et notre <a href="#" class="font-bold text-accent-green hover:underline">Politique de Confidentialité</a>.
+                        </span>
+                    </label>
+                </div>
+
+                <button type="submit" class="w-full py-4 px-6 bg-accent-green hover:bg-[#2d6550] text-white rounded-2xl font-black text-lg shadow-xl shadow-accent-green/10 hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-3 group mt-4">
+                    <span>Créer mon compte</span>
+                    <span class="material-symbols-outlined transition-transform group-hover:translate-x-1">rocket_launch</span>
+                </button>
+            </form>
+
+            <div class="mt-8 text-center border-t border-neutral-100 dark:border-neutral-800 pt-8">
+                <p class="text-neutral-500 dark:text-neutral-400 font-bold">
+                    Déjà inscrit ? 
+                    <a href="{% url 'diray:login' %}" class="text-accent-green hover:underline decoration-2 underline-offset-4 ml-1">Se connecter</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cinInput = document.querySelector('input[name="cin_or_passport"]');
+        if (cinInput) {
+            const cinRegex = /^[A-Z]{1,2}[0-9]{6}$/i;
+            
+            cinInput.addEventListener('input', function() {
+                const val = this.value.trim();
+                if (val && !cinRegex.test(val)) {
+                    this.classList.add('auth-input-error');
+                } else {
+                    this.classList.remove('auth-input-error');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

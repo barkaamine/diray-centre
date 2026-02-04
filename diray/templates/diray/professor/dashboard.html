@@ -1,0 +1,234 @@
+{% extends 'diray/professor/base_professor.html' %}
+{% load static %}
+
+{% block header_title %}Tableau de Bord{% endblock %}
+{% block header_subtitle %}Aperçu de vos performances et de vos sessions.{% endblock %}
+
+{% block professor_content %}
+{% if not selected_session %}
+<div class="glass-card p-12 text-center border-dashed border-2" style="border-color: var(--prof-border);">
+    <div class="size-20 rounded-full bg-surface-hover flex items-center justify-center mx-auto mb-6">
+        <span class="material-symbols-outlined text-4xl text-muted">upcoming</span>
+    </div>
+    <h2 class="text-2xl font-black mb-2" style="color: var(--prof-text-main);">Aucune session active</h2>
+    <p class="font-medium max-w-md mx-auto mb-8" style="color: var(--prof-text-muted);">
+        Sélectionnez une session dans le menu pour accéder aux outils de pilotage.
+    </p>
+    {% if all_sessions %}
+    <div class="flex flex-wrap justify-center gap-4">
+        {% for sess in all_sessions %}
+        <a href="?session_id={{ sess.id }}" class="px-6 py-3 rounded-xl bg-brand text-white font-bold hover:scale-105 transition-transform shadow-lg shadow-brand/20">
+            {{ sess.city.name }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% else %}
+
+<!-- Hero Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+    <!-- Stat 1 -->
+    <div class="glass-card p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 size-32 bg-brand-light rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-50 group-hover:opacity-100"></div>
+        <div class="relative z-10">
+            <div class="flex items-center justify-between mb-4">
+                <div class="size-12 rounded-xl bg-brand-light text-brand flex items-center justify-center">
+                    <span class="material-symbols-outlined text-2xl">group</span>
+                </div>
+                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest badge-success">
+                    Actifs
+                </span>
+            </div>
+            <p class="text-xs font-bold uppercase tracking-widest opacity-60 mb-1" style="color: var(--prof-text-muted);">Étudiants</p>
+            <h3 class="text-3xl font-black" style="color: var(--prof-text-main);">{{ students_count }}</h3>
+        </div>
+    </div>
+
+    <!-- Stat 2 -->
+    <div class="glass-card p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 size-32 bg-blue-50 dark:bg-blue-900/20 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-50 group-hover:opacity-100"></div>
+        <div class="relative z-10">
+            <div class="flex items-center justify-between mb-4">
+                <div class="size-12 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-2xl">trending_up</span>
+                </div>
+                <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest badge-info">
+                    High
+                </span>
+            </div>
+            <p class="text-xs font-bold uppercase tracking-widest opacity-60 mb-1" style="color: var(--prof-text-muted);">Engagement</p>
+            <h3 class="text-3xl font-black" style="color: var(--prof-text-main);">84%</h3>
+        </div>
+    </div>
+
+    <!-- Stat 3 -->
+    <div class="glass-card p-6 relative overflow-hidden group">
+        <div class="absolute top-0 right-0 size-32 bg-amber-50 dark:bg-amber-900/20 rounded-full blur-3xl -mr-16 -mt-16 transition-opacity opacity-50 group-hover:opacity-100"></div>
+        <div class="relative z-10">
+            <div class="flex items-center justify-between mb-4">
+                <div class="size-12 rounded-xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-2xl">star</span>
+                </div>
+            </div>
+            <p class="text-xs font-bold uppercase tracking-widest opacity-60 mb-1" style="color: var(--prof-text-muted);">Satisfaction</p>
+            <h3 class="text-3xl font-black" style="color: var(--prof-text-main);">4.9/5</h3>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Column: Studio & Feed -->
+    <div class="lg:col-span-2 space-y-8">
+        <!-- Live Studio Card -->
+        <div class="rounded-3xl p-8 relative overflow-hidden group text-white" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);">
+            <!-- Decorative blobs -->
+            <div class="absolute top-0 right-0 size-64 bg-brand rounded-full blur-3xl opacity-20 -mr-20 -mt-20"></div>
+            <div class="absolute bottom-0 left-0 size-64 bg-blue-600 rounded-full blur-3xl opacity-20 -ml-20 -mb-20"></div>
+
+            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                <div class="flex items-center gap-6">
+                    <div class="size-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10 shadow-xl">
+                        <span class="material-symbols-outlined text-3xl {% if active_streams %}text-red-400 animate-pulse{% endif %}">sensors</span>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black mb-1">Studio Live</h3>
+                        <p class="text-white/60 text-sm font-medium">Session: {{ selected_session.city.name }}</p>
+                    </div>
+                </div>
+
+                <div>
+                    {% if selected_session.status == 'ONGOING' %}
+                        {% if active_streams %}
+                            {% for stream in active_streams %}
+                            <a href="{% url 'diray:live_session' stream.id %}" class="px-8 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold uppercase tracking-wider shadow-lg shadow-red-500/30 transition-all transform hover:-translate-y-1 inline-block">
+                                Rejoindre
+                            </a>
+                            {% endfor %}
+                        {% else %}
+                            <a href="{% url 'diray:start_live_stream' selected_session.id %}" class="px-8 py-3 bg-white text-slate-900 hover:bg-slate-50 rounded-xl font-bold uppercase tracking-wider shadow-lg transition-all transform hover:-translate-y-1 inline-block">
+                                Lancer le Live
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <div class="px-6 py-2 bg-white/10 rounded-lg text-xs font-bold uppercase tracking-widest text-white/50 border border-white/10">
+                            Session Inactive
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Interactions -->
+        <div class="glass-card overflow-hidden">
+            <div class="p-6 border-b border-prof flex items-center justify-between">
+                <h3 class="font-bold flex items-center gap-2" style="color: var(--prof-text-main);">
+                    <span class="material-symbols-outlined text-brand">forum</span>
+                    Dernières Interactions
+                </h3>
+                <a href="{% url 'diray:professor_comments' %}" class="text-xs font-bold uppercase tracking-widest text-brand hover:underline">Voir tout</a>
+            </div>
+            <div class="divide-y border-prof">
+                {% if recent_comments %}
+                    {% for comment in recent_comments %}
+                    <div class="p-6 hover:bg-surface-hover transition-colors flex gap-4 group">
+                        <div class="size-10 rounded-full bg-brand-light text-brand flex items-center justify-center font-bold text-sm shrink-0">
+                            {{ comment.student.profile.full_name|first|upper }}
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-1">
+                                <h4 class="text-sm font-bold" style="color: var(--prof-text-main);">{{ comment.student.profile.full_name }}</h4>
+                                <span class="text-[10px] font-bold opacity-50" style="color: var(--prof-text-muted);">{{ comment.created_at|timesince }}</span>
+                            </div>
+                            <p class="text-sm opacity-80 mb-3" style="color: var(--prof-text-muted);">{{ comment.content|truncatechars:100 }}</p>
+                            <a href="{% url 'diray:professor_comments' %}?student_id={{ comment.student.id }}" class="text-xs font-bold text-brand hover:underline">Répondre</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="p-12 text-center opacity-50">
+                        <span class="material-symbols-outlined text-4xl mb-2 text-muted">chat_bubble_outline</span>
+                        <p class="text-sm font-medium text-muted">Aucune interaction récente</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Actions -->
+    <div class="lg:col-span-1 space-y-8">
+        <!-- Quick Actions -->
+        <div class="glass-card p-6">
+            <h3 class="text-xs font-black uppercase tracking-widest opacity-50 mb-6" style="color: var(--prof-text-muted);">Actions Rapides</h3>
+            
+            <form action="{% url 'diray:send_session_notification' selected_session.id %}" method="post" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="text-xs font-bold opacity-70 mb-1 block" style="color: var(--prof-text-main);">Annonce</label>
+                    <input type="text" name="title" placeholder="Sujet..." class="w-full px-4 py-3 rounded-xl bg-surface-hover border border-prof outline-none focus:border-brand transition-colors text-sm" style="color: var(--prof-text-main);" required>
+                </div>
+                <div>
+                    <textarea name="message" placeholder="Votre message public..." class="w-full px-4 py-3 rounded-xl bg-surface-hover border border-prof outline-none focus:border-brand transition-colors text-sm h-24 resize-none" style="color: var(--prof-text-main);" required></textarea>
+                </div>
+                <button type="submit" class="w-full py-3 bg-brand text-white rounded-xl font-bold text-sm hover:opacity-90 transition-opacity shadow-lg shadow-brand/20">
+                    Publier l'annonce
+                </button>
+            </form>
+        </div>
+
+        <!-- Session Status Control -->
+        <div class="glass-card p-6">
+            <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold opacity-50 uppercase tracking-widest" style="color: var(--prof-text-muted);">État Session</span>
+                <span class="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-hover border border-prof text-[10px] font-bold uppercase tracking-widest" style="color: var(--prof-text-main);">
+                    <span class="size-2 rounded-full {% if selected_session.status == 'ONGOING' %}bg-green-500 animate-pulse{% else %}bg-slate-400{% endif %}"></span>
+                    {{ selected_session.get_status_display }}
+                </span>
+            </div>
+
+            {% if selected_session.status != 'COMPLETED' %}
+            <button onclick="document.getElementById('endSessionModal').classList.remove('hidden')" class="w-full py-3 border-2 border-red-500/20 text-red-500 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-red-500/10 transition-colors">
+                Terminer la session
+            </button>
+            {% else %}
+            <div class="p-4 text-center border border-prof rounded-xl bg-surface-hover opacity-50">
+                <span class="text-xs font-bold">Session Clôturée</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="endSessionModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onclick="document.getElementById('endSessionModal').classList.add('hidden')"></div>
+    <div class="glass-card relative w-full max-w-sm p-8 z-10 scale-in">
+        <div class="size-14 mx-auto bg-red-50 dark:bg-red-900/20 text-red-500 rounded-2xl flex items-center justify-center mb-4">
+            <span class="material-symbols-outlined text-3xl">warning</span>
+        </div>
+        <h3 class="text-xl font-black text-center mb-2" style="color: var(--prof-text-main);">Clôturer la session ?</h3>
+        <p class="text-center text-sm opacity-60 mb-8" style="color: var(--prof-text-muted);">Cette action est irréversible et archivera la session actuelle.</p>
+        
+        <div class="flex gap-3">
+            <button onclick="document.getElementById('endSessionModal').classList.add('hidden')" class="flex-1 py-3 rounded-xl border border-prof font-bold text-sm hover:bg-surface-hover transition-colors" style="color: var(--prof-text-main);">Annuler</button>
+            <form action="{% url 'diray:update_session_status' selected_session.id %}" method="post" class="flex-1">
+                {% csrf_token %}
+                <input type="hidden" name="status" value="COMPLETED">
+                <button type="submit" class="w-full py-3 bg-red-500 text-white rounded-xl font-bold text-sm hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20">
+                    Confirmer
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .scale-in { animation: scaleIn 0.2s ease-out; }
+    @keyframes scaleIn {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+</style>
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,547 @@
+<!-- templates/diray/admin/training_management.html -->
+{% extends 'diray/base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Formations - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .image-preview {
+        max-height: 200px;
+        object-fit: cover;
+    }
+    
+    .url-input-group {
+        position: relative;
+    }
+    
+    .url-validation {
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .url-valid {
+        color: #10b981;
+    }
+    
+    .url-invalid {
+        color: #ef4444;
+    }
+    
+    .image-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .gallery-item {
+        position: relative;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    
+    .gallery-item img {
+        width: 100%;
+        height: 100px;
+        object-fit: cover;
+    }
+    
+    .gallery-item-actions {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        display: none;
+    }
+    
+    .gallery-item:hover .gallery-item-actions {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Admin Header -->
+    <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                        {% if training %}Modifier la formation{% else %}Nouvelle formation{% endif %}
+                    </h1>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Gestion des formations avec images distantes
+                    </p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'admin_dashboard' %}" 
+                       class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                        Retour au tableau de bord
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <form method="POST" enctype="multipart/form-data" id="training-form" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Basic Information -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    Informations de base
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Title -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Titre de la formation *
+                        </label>
+                        <input type="text" name="title" required 
+                               value="{{ training.title|default:'' }}"
+                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-accent-green focus:border-transparent">
+                    </div>
+                    
+                    <!-- Slug -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Slug URL
+                        </label>
+                        <input type="text" name="slug" 
+                               value="{{ training.slug|default:'' }}"
+                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-accent-green focus:border-transparent"
+                               placeholder="generated-automatically">
+                    </div>
+                    
+                    <!-- Category -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Catégorie
+                        </label>
+                        <select name="category" 
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-accent-green focus:border-transparent">
+                            <option value="">Sélectionnez une catégorie</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" 
+                                    {% if training.category.id == category.id %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Subcategory -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Sous-catégorie
+                        </label>
+                        <select name="subcategory" 
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-accent-green focus:border-transparent">
+                            <option value="">Sélectionnez une sous-catégorie</option>
+                            {% for category in categories %}
+                                {% for sub in category.subcategories.all %}
+                                <option value="{{ sub.id }}"
+                                        {% if training.subcategory.id == sub.id %}selected{% endif %}>
+                                    {{ sub.name }}
+                                </option>
+                                {% endfor %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Management - USING URLS -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    Gestion des images (URLs)
+                </h2>
+                
+                <!-- Thumbnail URL -->
+                <div class="mb-8">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        URL de la miniature *
+                    </label>
+                    <div class="url-input-group">
+                        <input type="url" name="thumbnail_url" required
+                               value="{{ training.thumbnail_url|default:'' }}"
+                               placeholder="https://example.com/image.jpg"
+                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-accent-green focus:border-transparent"
+                               onblur="validateImageUrl(this)">
+                        <div class="url-validation"></div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-500 mb-2">Prévisualisation:</p>
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                            <img id="thumbnail-preview" 
+                                 src="{{ training.thumbnail_url|default:'' }}"
+                                 alt="Prévisualisation"
+                                 class="image-preview w-full rounded-lg"
+                                 onerror="this.src='{% static 'images/default-thumbnail.jpg' %}'">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cover Image URL -->
+                <div class="mb-8">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        URL de l'image de couverture
+                    </label>
+                    <div class="url-input-group">
+                        <input type="url" name="cover_url"
+                               value="{{ training.cover_url|default:'' }}"
+                               placeholder="https://example.com/cover.jpg"
+                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-accent-green focus:border-transparent"
+                               onblur="validateImageUrl(this)">
+                        <div class="url-validation"></div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-500 mb-2">Prévisualisation:</p>
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                            <img id="cover-preview" 
+                                 src="{{ training.cover_url|default:'' }}"
+                                 alt="Prévisualisation de la couverture"
+                                 class="image-preview w-full rounded-lg"
+                                 onerror="this.style.display='none'">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gallery URLs -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Galerie d'images (URLs)
+                    </label>
+                    <div id="gallery-urls">
+                        {% if training.gallery_urls %}
+                            {% for url in training.gallery_urls %}
+                            <div class="gallery-url-item mb-3">
+                                <div class="flex gap-2">
+                                    <input type="url" name="gallery_urls[]" 
+                                           value="{{ url }}"
+                                           placeholder="https://example.com/gallery-image.jpg"
+                                           class="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg">
+                                    <button type="button" onclick="removeGalleryUrl(this)"
+                                            class="px-4 py-3 bg-red-100 text-red-700 rounded-lg hover:bg-red-200">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                        <div class="gallery-url-item mb-3">
+                            <div class="flex gap-2">
+                                <input type="url" name="gallery_urls[]" 
+                                       placeholder="https://example.com/gallery-image.jpg"
+                                       class="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg">
+                                <button type="button" onclick="removeGalleryUrl(this)"
+                                        class="px-4 py-3 bg-red-100 text-red-700 rounded-lg hover:bg-red-200">
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <button type="button" onclick="addGalleryUrl()"
+                            class="mt-3 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
+                        <span class="material-symbols-outlined align-middle">add</span>
+                        Ajouter une image
+                    </button>
+                    
+                    <!-- Gallery Preview -->
+                    <div class="mt-6">
+                        <p class="text-sm text-gray-500 mb-2">Prévisualisation de la galerie:</p>
+                        <div id="gallery-preview" class="image-gallery">
+                            <!-- Filled by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pricing -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    Tarification
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Prix en MAD *
+                        </label>
+                        <input type="number" name="price_mad" step="0.01" required
+                               value="{{ training.price_mad|default:'0' }}"
+                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-accent-green focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Prix en EUR (auto-calculé)
+                        </label>
+                        <input type="number" name="price_eur" step="0.01" readonly
+                               value="{{ training.price_eur|default:'' }}"
+                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Prix en USD (auto-calculé)
+                        </label>
+                        <input type="number" name="price_usd" step="0.01" readonly
+                               value="{{ training.price_usd|default:'' }}"
+                               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    Informations supplémentaires
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Badge -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Badge
+                        </label>
+                        <select name="badge" 
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-accent-green focus:border-transparent">
+                            {% for value, label in badges %}
+                            <option value="{{ value }}"
+                                    {% if training.badge == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Language -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Langue
+                        </label>
+                        <select name="language" 
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-accent-green focus:border-transparent">
+                            {% for value, label in languages %}
+                            <option value="{{ value }}"
+                                    {% if training.language == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Schedule Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Type d'horaire
+                        </label>
+                        <select name="schedule_type" 
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-accent-green focus:border-transparent">
+                            {% for value, label in schedule_types %}
+                            <option value="{{ value }}"
+                                    {% if training.schedule_type == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Statut
+                        </label>
+                        <select name="status" 
+                                class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-accent-green focus:border-transparent">
+                            <option value="draft" {% if training.status == 'draft' %}selected{% endif %}>
+                                🔄 Brouillon
+                            </option>
+                            <option value="active" {% if training.status == 'active' %}selected{% endif %}>
+                                ✅ Active
+                            </option>
+                            <option value="archived" {% if training.status == 'archived' %}selected{% endif %}>
+                                📁 Archivée
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Available Cities -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Villes disponibles
+                    </label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                        {% for city in cities %}
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="available_cities" value="{{ city.id }}"
+                                   {% if city in training.available_cities.all %}checked{% endif %}
+                                   class="rounded border-gray-300 text-accent-green focus:ring-accent-green">
+                            <span class="text-sm">{{ city.name }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Featured Checkbox -->
+                <div class="mt-6">
+                    <label class="flex items-center space-x-3 cursor-pointer">
+                        <input type="checkbox" name="is_featured"
+                               {% if training.is_featured %}checked{% endif %}
+                               class="w-4 h-4 rounded border-gray-300 text-accent-green focus:ring-accent-green">
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Mettre en avant sur la page d'accueil
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Submit Buttons -->
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'admin_dashboard' %}"
+                   class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
+                    Annuler
+                </a>
+                <button type="submit"
+                        class="px-6 py-3 bg-accent-green text-white rounded-lg font-bold hover:bg-accent-green/90">
+                    {% if training %}Mettre à jour{% else %}Créer la formation{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Validate image URL
+    function validateImageUrl(input) {
+        const url = input.value;
+        const validationDiv = input.parentElement.querySelector('.url-validation');
+        const previewId = input.name === 'thumbnail_url' ? 'thumbnail-preview' : 'cover-preview';
+        const preview = document.getElementById(previewId);
+        
+        if (!url) {
+            validationDiv.textContent = '';
+            preview.src = '';
+            return;
+        }
+        
+        // Basic URL validation
+        try {
+            new URL(url);
+            validationDiv.textContent = 'URL valide';
+            validationDiv.className = 'url-validation url-valid';
+            
+            // Update preview
+            preview.src = url;
+            preview.onerror = function() {
+                validationDiv.textContent = "L'image n'a pas pu être chargée";
+                validationDiv.className = 'url-validation url-invalid';
+                preview.src = '{% static 'images/default-thumbnail.jpg' %}';
+            };
+        } catch (e) {
+            validationDiv.textContent = 'URL invalide';
+            validationDiv.className = 'url-validation url-invalid';
+            preview.src = '{% static 'images/default-thumbnail.jpg' %}';
+        }
+    }
+    
+    // Gallery management
+    function addGalleryUrl() {
+        const container = document.getElementById('gallery-urls');
+        const div = document.createElement('div');
+        div.className = 'gallery-url-item mb-3';
+        div.innerHTML = `
+            <div class="flex gap-2">
+                <input type="url" name="gallery_urls[]" 
+                       placeholder="https://example.com/gallery-image.jpg"
+                       class="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg"
+                       oninput="updateGalleryPreview()">
+                <button type="button" onclick="removeGalleryUrl(this)"
+                        class="px-4 py-3 bg-red-100 text-red-700 rounded-lg hover:bg-red-200">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+            </div>
+        `;
+        container.appendChild(div);
+    }
+    
+    function removeGalleryUrl(button) {
+        button.closest('.gallery-url-item').remove();
+        updateGalleryPreview();
+    }
+    
+    function updateGalleryPreview() {
+        const galleryPreview = document.getElementById('gallery-preview');
+        const inputs = document.querySelectorAll('input[name="gallery_urls[]"]');
+        
+        galleryPreview.innerHTML = '';
+        
+        inputs.forEach(input => {
+            if (input.value) {
+                const div = document.createElement('div');
+                div.className = 'gallery-item';
+                div.innerHTML = `
+                    <img src="${input.value}" 
+                         alt="Gallery image" 
+                         onerror="this.src='{% static 'images/default-thumbnail.jpg' %}'">
+                    <div class="gallery-item-actions">
+                        <button type="button" onclick="removeGalleryUrl(this.closest('.gallery-item'))"
+                                class="p-1 bg-red-500 text-white rounded">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </div>
+                `;
+                galleryPreview.appendChild(div);
+            }
+        });
+    }
+    
+    // Auto-calculate EUR and USD prices
+    const priceMAD = document.querySelector('input[name="price_mad"]');
+    if (priceMAD) {
+        priceMAD.addEventListener('input', function() {
+            const mad = parseFloat(this.value) || 0;
+            const eur = (mad * 0.093).toFixed(2);
+            const usd = (mad * 0.10).toFixed(2);
+            
+            document.querySelector('input[name="price_eur"]').value = eur;
+            document.querySelector('input[name="price_usd"]').value = usd;
+        });
+    }
+    
+    // Auto-generate slug from title
+    const titleInput = document.querySelector('input[name="title"]');
+    const slugInput = document.querySelector('input[name="slug"]');
+    
+    if (titleInput && slugInput) {
+        titleInput.addEventListener('blur', function() {
+            if (!slugInput.value) {
+                const slug = this.value
+                    .toLowerCase()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove accents
+                    .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+                    .replace(/\s+/g, '-') // Replace spaces with hyphens
+                    .replace(/-+/g, '-'); // Remove duplicate hyphens
+                slugInput.value = slug;
+            }
+        });
+    }
+    
+    // Initialize gallery preview
+    document.addEventListener('DOMContentLoaded', function() {
+        updateGalleryPreview();
+        
+        // Validate existing URLs
+        document.querySelectorAll('input[type="url"]').forEach(input => {
+            if (input.value) {
+                validateImageUrl(input);
+            }
+        });
+    });
+</script>
+{% endblock %}

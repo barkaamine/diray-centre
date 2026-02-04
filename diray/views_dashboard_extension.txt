@@ -1,0 +1,76 @@
+
+# ==========================================
+# STUDENT DASHBOARD VIEWS
+# ==========================================
+
+from django.contrib.auth.decorators import login_required
+from .models import StudentProfile, Session, AttendanceLog
+
+@login_required
+def dashboard(request):
+    """Student dashboard view"""
+    if not hasattr(request.user, 'profile'):
+        messages.error(request, "Votre profil n'est pas encore configuré.")
+        return redirect('home')
+        
+    profile = request.user.profile
+    
+    # Check if student
+    if profile.role != 'STUDENT':
+         # If professor or admin, redirect to admin for now or specialized dashboard
+         return redirect('/admin/')
+         
+    try:
+        student_profile = profile.student_profile
+    except StudentProfile.DoesNotExist:
+        # Auto-create if missing (failsafe)
+        student_profile = StudentProfile.objects.create(profile=profile)
+    
+    # Get active formations
+    my_formations = student_profile.formations_access.all()
+    
+    # Get upcoming sessions
+    upcoming_sessions = student_profile.sessions_access.filter(
+        start_datetime__gte=timezone.now(),
+        is_active=True
+    ).order_by('start_datetime')[:5]
+    
+    # Calculate progress (mock logic for now, can be sophisticated later)
+    # in real-app, we would query VideoProgress
+    
+    context = {
+        'profile': profile,
+        'my_formations': my_formations,
+        'upcoming_sessions': upcoming_sessions,
+        'active_count': my_formations.count(),
+        'completed_count': 0, # Placeholder
+    }
+    
+    return render(request, 'diray/dashboard/dashboard.html', context)
+
+@login_required
+def student_profile_view(request):
+    """View to update student profile"""
+    profile = request.user.profile
+    
+    if request.method == 'POST':
+        # Update logic here
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        phone = request.POST.get('phone')
+        city = request.POST.get('city')
+        
+        user = request.user
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save()
+        
+        profile.full_name = f"{first_name} {last_name}"
+        profile.phone_number = phone
+        profile.city = city
+        profile.save()
+        
+        messages.success(request, "Profil mis à jour avec succès.")
+        return redirect('diray:student_profile')
+        
+    return render(request, 'diray/dashboard/profile.html', {'profile': profile})

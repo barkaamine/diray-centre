@@ -1,0 +1,68 @@
+# ==============================================
+# DIRAY CENTRE - Git Ignore
+# ==============================================
+
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+*.pot
+*.mo
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Coverage
+htmlcov/
+.coverage
+.coverage.*
+
+# Cache
+.cache/
+*.cache
+.pytest_cache/
+
+# Secrets (IMPORTANT - Ne jamais commiter!)
+.env
+.env.local
+.env.*.local
+secrets.json
+*.pem
+*.key
+
+# Uploads (media files)
+uploads/
+media/
+
+# Node (si vous avez du frontend)
+node_modules/
+
+# Temporary files
+*.tmp
+*.temp

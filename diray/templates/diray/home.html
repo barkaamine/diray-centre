@@ -1,0 +1,624 @@
+<!-- templates/diray/home.html - REMOVED ANIMATIONS FROM FORMATIONS CARDS -->
+{% extends 'diray/base.html' %}
+{% load static %}
+
+{% block title %}Diray Centre - Formation Professionnelle & Développement des Compétences{% endblock %}
+
+{% block main_class %}w-full{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Video Background -->
+<section class="relative h-[90vh] min-h-[700px] flex items-center overflow-hidden">
+    <!-- Video Background Container -->
+    <div class="absolute inset-0 z-0">
+        <video autoplay muted loop playsinline class="w-full h-full object-cover">
+            <source src="{% static 'videos/videobg.mp4' %}" type="video/mp4">
+        </video>
+        <!-- Overlay for contrast -->
+        <div class="absolute inset-0 bg-neutral-900/40 backdrop-blur-[2px]"></div>
+        <!-- Gradient Bottom for smooth transition -->
+        <div class="absolute inset-0 bg-gradient-to-t from-white dark:from-background-dark via-transparent to-transparent opacity-80"></div>
+    </div>
+
+    <!-- Hero Content -->
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6 relative z-10 w-full">
+        <div class="max-w-4xl flex flex-col gap-6 lg:gap-8 instant-show text-white">
+            <!-- Location Detection Badge -->
+            <div class="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 w-fit">
+                <span class="material-symbols-outlined text-base sm:text-lg text-accent-green">location_on</span>
+                <span class="text-[10px] font-bold uppercase tracking-widest">📍 Localisation : {{ user_location.city|default:"Casablanca" }}</span>
+            </div>
+            
+            <h1 class="text-4xl sm:text-5xl lg:text-7xl xl:text-8xl font-black leading-[0.9] tracking-tighter drop-shadow-2xl">
+                L'Excellence par la <br>
+                <span class="text-accent-green">Formation</span> Technique
+            </h1>
+            
+            <p class="text-lg sm:text-xl lg:text-2xl text-white/90 max-w-[600px] leading-relaxed font-medium drop-shadow-lg">
+                Propulsez votre carrière avec nos programmes certifiants en CACES, Électricité et Soudage au sein de Diray Centre.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row flex-wrap gap-4 mt-4">
+                <a href="{% url 'diray:training_catalog' %}" class="px-8 sm:px-10 py-4 sm:py-5 bg-accent-green text-white rounded-2xl font-black shadow-xl hover:shadow-accent-green/30 transition-all duration-300 hover:-translate-y-1 flex items-center justify-center gap-3 active:scale-95">
+                    <span class="text-sm sm:text-base">Consulter les Formations</span>
+                    <span class="material-symbols-outlined text-xl">trending_up</span>
+                </a>
+                <a href="#testimonials" class="px-8 sm:px-10 py-4 sm:py-5 bg-white/10 backdrop-blur-xl border border-white/20 text-white rounded-2xl font-black hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-3">
+                    <span class="material-symbols-outlined text-xl">play_circle</span>
+                    <span class="text-sm sm:text-base">Témoignages</span>
+                </a>
+            </div>
+            
+            <!-- Floating Stats (Horizontal) -->
+            <div class="flex flex-wrap items-center gap-8 mt-10">
+                <div class="flex flex-col">
+                    <span class="text-3xl font-black text-accent-green">13.000+</span>
+                    <span class="text-xs uppercase tracking-widest font-bold opacity-80 text-white">Stagiaires Formés</span>
+                </div>
+                <div class="w-px h-10 bg-white/20 hidden sm:block"></div>
+                <div class="flex flex-col">
+                    <span class="text-3xl font-black text-accent-green">95%</span>
+                    <span class="text-xs uppercase tracking-widest font-bold opacity-80 text-white">Taux de Réussite</span>
+                </div>
+                <div class="w-px h-10 bg-white/20 hidden sm:block"></div>
+                <div class="flex flex-col">
+                    <span class="text-3xl font-black text-accent-green">ISO 9001</span>
+                    <span class="text-xs uppercase tracking-widest font-bold opacity-80 text-white">Centre Certifié</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scroll Indicator -->
+    <a href="#formations" class="absolute bottom-12 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 text-white/60 hover:text-white transition-colors animate-float">
+        <span class="text-[10px] uppercase font-black tracking-[0.3em]">Découvrir</span>
+        <span class="material-symbols-outlined text-3xl animate-bounce">expand_more</span>
+    </a>
+</section>
+
+<style>
+    @keyframes float {
+        0%, 100% { transform: translate(-50%, 0); }
+        50% { transform: translate(-50%, -10px); }
+    }
+    .animate-float {
+        animation: float 3s ease-in-out infinite;
+    }
+</style>
+
+<!-- Formations Section - REMOVED ANIMATIONS -->
+<section id="formations" class="px-4 sm:px-6 py-16 lg:py-24 jpg">
+    <div class="max-w-[1440px] mx-auto">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-12 lg:mb-16">
+        <div class="max-w-2xl">
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-primary dark:text-white tracking-tight mb-3 sm:mb-4 uppercase">Nos Formations Certifiantes</h2>
+            <p class="text-neutral-500 dark:text-neutral-400 text-base sm:text-lg">
+                Programmes conçus pour répondre aux besoins du marché professionnel. Prix affichés en <span class="font-bold text-accent-green current-currency">MAD</span>.
+            </p>
+        </div>
+        <a href="{% url 'diray:training_catalog' %}" class="flex items-center gap-2 text-accent-green font-bold group">
+            <span class="text-sm sm:text-base">Voir tout le catalogue</span>
+            <span class="material-symbols-outlined text-base group-hover:translate-x-1 transition-transform duration-200">arrow_forward</span>
+        </a>
+    </div>
+    
+    <div class="grid sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8">
+        <!-- Featured trainings will be loaded dynamically from database -->
+        {% for training in featured_trainings %}
+        <div class="group rounded-2xl sm:rounded-3xl border border-neutral-100 dark:border-neutral-800 overflow-hidden bg-white dark:bg-neutral-800/30 shadow-sm">
+            <div class="h-40 sm:h-48 overflow-hidden relative training-image {% if not training.thumbnail %}fallback{% endif %}">
+                {% if training.thumbnail and training.thumbnail != 'undefined' %}
+                <img src="{{ training.thumbnail }}" 
+                    alt="{{ training.title }}"
+                    class="absolute inset-0 w-full h-full object-cover"
+                    loading="lazy"
+                    width="400"
+                    height="240"
+                    onerror="handleImageError(this)">
+                {% else %}
+                <div class="absolute inset-0 bg-gradient-to-r from-accent-green to-accent-blue flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-4xl">
+                        {% if training.category == 'caces' %}construction
+                        {% elif training.category == 'soudage' %}welding
+                        {% elif training.category == 'electrique' %}electrical_services
+                        {% elif training.category == 'securite' %}security
+                        {% else %}school{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                
+                {% if training.badge == 'popular' %}
+                <span class="absolute top-3 sm:top-4 left-3 sm:left-4 bg-red-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-bold">
+                    🔥 Populaire
+                </span>
+                {% elif training.badge == 'new' %}
+                <span class="absolute top-3 sm:top-4 left-3 sm:left-4 bg-accent-blue text-white px-2 sm:px-3 py-1 rounded-full text-xs font-bold">
+                    🆕 Nouvelle
+                </span>
+                {% elif training.badge == 'promo' %}
+                <span class="absolute top-3 sm:top-4 left-3 sm:left-4 bg-accent-gold text-white px-2 sm:px-3 py-1 rounded-full text-xs font-bold">
+                    ⚡ Promotion
+                </span>
+                {% endif %}
+            </div>
+            <div class="p-4 sm:p-6 lg:p-8">
+                <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3 line-clamp-1">{{ training.title|default:"Formation Professionnelle" }}</h3>
+                <p class="text-neutral-500 dark:text-neutral-400 text-sm mb-4 sm:mb-6 leading-relaxed line-clamp-2">
+                    {{ training.short_description|default:"Programme de formation professionnelle certifiante avec accompagnement personnalisé."|truncatechars:100 }}
+                </p>
+                
+                <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">schedule</span>
+                        <span class="text-xs font-medium">{{ training.duration_days|default:"30" }} jours</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">school</span>
+                        <span class="text-xs font-medium">Certifiante</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">groups</span>
+                        <span class="text-xs font-medium">{{ training.max_students|default:"20" }} max/groupe</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">bar_chart</span>
+                        <span class="text-xs font-medium">{{ training.success_rate|default:"95" }}% réussite</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between pt-4 sm:pt-6 border-t border-neutral-200 dark:border-neutral-700">
+                    <div class="flex flex-col">
+                        <span class="text-xs text-neutral-400 uppercase font-bold">À partir de</span>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-xl sm:text-2xl font-black text-accent-green price-display" data-price-mad="{{ training.price_mad|default:4500 }}">
+                                {{ training.price_mad|default:4500|floatformat:0 }} MAD
+                            </span>
+                        </div>
+                    </div>
+                    <a href="{% url 'diray:training_detail' training.slug|default:'formation-generique' %}" class="px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-primary text-white text-xs sm:text-sm font-bold hover:bg-accent-green transition-colors duration-200 flex items-center gap-1 sm:gap-2">
+                        <span class="hidden sm:inline">Détails</span>
+                        <span class="sm:hidden">+</span>
+                        <span class="material-symbols-outlined text-xs sm:text-sm">visibility</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <!-- Fallback sample trainings if no data in database -->
+        <div class="group rounded-2xl sm:rounded-3xl border border-neutral-100 dark:border-neutral-800 overflow-hidden bg-white dark:bg-neutral-800/30 shadow-sm">
+            <div class="h-40 sm:h-48 overflow-hidden relative training-image fallback">
+                <div class="absolute inset-0 bg-gradient-to-r from-accent-green to-accent-blue flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-4xl">construction</span>
+                </div>
+                <span class="absolute top-3 sm:top-4 left-3 sm:left-4 bg-red-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-bold">
+                    🔥 Populaire
+                </span>
+            </div>
+            <div class="p-4 sm:p-6 lg:p-8">
+                <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Formation CACES</h3>
+                <p class="text-neutral-500 dark:text-neutral-400 text-sm mb-4 sm:mb-6 leading-relaxed">
+                    La formation CACES s'adresse aux débutants souhaitant acquérir les bases de la conduite d'engins de chantier en toute sécurité.
+                </p>
+                
+                <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">schedule</span>
+                        <span class="text-xs font-medium">1 mois</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">school</span>
+                        <span class="text-xs font-medium">Certifiante</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">groups</span>
+                        <span class="text-xs font-medium">20 max/groupe</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">bar_chart</span>
+                        <span class="text-xs font-medium">98% réussite</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between pt-4 sm:pt-6 border-t border-neutral-200 dark:border-neutral-700">
+                    <div class="flex flex-col">
+                        <span class="text-xs text-neutral-400 uppercase font-bold">À partir de</span>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-xl sm:text-2xl font-black text-accent-green price-display" data-price-mad="4500">
+                                4 500 MAD
+                            </span>
+                        </div>
+                    </div>
+                    <a href="#" class="px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-primary text-white text-xs sm:text-sm font-bold hover:bg-accent-green transition-colors duration-200 flex items-center gap-1 sm:gap-2">
+                        <span class="hidden sm:inline">Détails</span>
+                        <span class="sm:hidden">+</span>
+                        <span class="material-symbols-outlined text-xs sm:text-sm">visibility</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional sample cards -->
+        <div class="group rounded-2xl sm:rounded-3xl border border-neutral-100 dark:border-neutral-800 overflow-hidden bg-white dark:bg-neutral-800/30 shadow-sm">
+            <div class="h-40 sm:h-48 overflow-hidden relative training-image fallback">
+                <div class="absolute inset-0 bg-gradient-to-r from-accent-blue to-accent-green flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-4xl">welding</span>
+                </div>
+                <span class="absolute top-3 sm:top-4 left-3 sm:left-4 bg-accent-blue text-white px-2 sm:px-3 py-1 rounded-full text-xs font-bold">
+                    🆕 Nouvelle
+                </span>
+            </div>
+            <div class="p-4 sm:p-6 lg:p-8">
+                <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Soudage Industriel</h3>
+                <p class="text-neutral-500 dark:text-neutral-400 text-sm mb-4 sm:mb-6 leading-relaxed">
+                    Formation complète en techniques de soudage pour l'industrie avec certification internationale.
+                </p>
+                
+                <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">schedule</span>
+                        <span class="text-xs font-medium">6 semaines</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">school</span>
+                        <span class="text-xs font-medium">Certifiante</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">groups</span>
+                        <span class="text-xs font-medium">15 max/groupe</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">bar_chart</span>
+                        <span class="text-xs font-medium">96% réussite</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between pt-4 sm:pt-6 border-t border-neutral-200 dark:border-neutral-700">
+                    <div class="flex flex-col">
+                        <span class="text-xs text-neutral-400 uppercase font-bold">À partir de</span>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-xl sm:text-2xl font-black text-accent-green price-display" data-price-mad="6800">
+                                6 800 MAD
+                            </span>
+                        </div>
+                    </div>
+                    <a href="#" class="px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-primary text-white text-xs sm:text-sm font-bold hover:bg-accent-green transition-colors duration-200 flex items-center gap-1 sm:gap-2">
+                        <span class="hidden sm:inline">Détails</span>
+                        <span class="sm:hidden">+</span>
+                        <span class="material-symbols-outlined text-xs sm:text-sm">visibility</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="group rounded-2xl sm:rounded-3xl border border-neutral-100 dark:border-neutral-800 overflow-hidden bg-white dark:bg-neutral-800/30 shadow-sm">
+            <div class="h-40 sm:h-48 overflow-hidden relative training-image fallback">
+                <div class="absolute inset-0 bg-gradient-to-r from-accent-green to-accent-gold flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-4xl">electrical_services</span>
+                </div>
+                <span class="absolute top-3 sm:top-4 left-3 sm:left-4 bg-accent-gold text-white px-2 sm:px-3 py-1 rounded-full text-xs font-bold">
+                    ⚡ Promotion
+                </span>
+            </div>
+            <div class="p-4 sm:p-6 lg:p-8">
+                <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Électricité Bâtiment</h3>
+                <p class="text-neutral-500 dark:text-neutral-400 text-sm mb-4 sm:mb-6 leading-relaxed">
+                    Formation complète en installations électriques pour bâtiments résidentiels et commerciaux.
+                </p>
+                
+                <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">schedule</span>
+                        <span class="text-xs font-medium">2 mois</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">school</span>
+                        <span class="text-xs font-medium">Certifiante</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">groups</span>
+                        <span class="text-xs font-medium">18 max/groupe</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">bar_chart</span>
+                        <span class="text-xs font-medium">97% réussite</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between pt-4 sm:pt-6 border-t border-neutral-200 dark:border-neutral-700">
+                    <div class="flex flex-col">
+                        <span class="text-xs text-neutral-400 uppercase font-bold">À partir de</span>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-xl sm:text-2xl font-black text-accent-green price-display" data-price-mad="5200">
+                                5 200 MAD
+                            </span>
+                        </div>
+                    </div>
+                    <a href="#" class="px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-primary text-white text-xs sm:text-sm font-bold hover:bg-accent-green transition-colors duration-200 flex items-center gap-1 sm:gap-2">
+                        <span class="hidden sm:inline">Détails</span>
+                        <span class="sm:hidden">+</span>
+                        <span class="material-symbols-outlined text-xs sm:text-sm">visibility</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="group rounded-2xl sm:rounded-3xl border border-neutral-100 dark:border-neutral-800 overflow-hidden bg-white dark:bg-neutral-800/30 shadow-sm">
+            <div class="h-40 sm:h-48 overflow-hidden relative training-image fallback">
+                <div class="absolute inset-0 bg-gradient-to-r from-accent-blue to-accent-gold flex items-center justify-center">
+                    <span class="material-symbols-outlined text-white text-4xl">security</span>
+                </div>
+                <span class="absolute top-3 sm:top-4 left-3 sm:left-4 bg-red-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs font-bold">
+                    🔥 Populaire
+                </span>
+            </div>
+            <div class="p-4 sm:p-6 lg:p-8">
+                <h3 class="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Sécurité Industrielle</h3>
+                <p class="text-neutral-500 dark:text-neutral-400 text-sm mb-4 sm:mb-6 leading-relaxed">
+                    Formation HSE complète pour la prévention des risques en milieu industriel.
+                </p>
+                
+                <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">schedule</span>
+                        <span class="text-xs font-medium">3 semaines</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">school</span>
+                        <span class="text-xs font-medium">Certifiante</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">groups</span>
+                        <span class="text-xs font-medium">25 max/groupe</span>
+                    </div>
+                    <div class="flex items-center gap-1 sm:gap-2">
+                        <span class="material-symbols-outlined text-accent-green text-xs sm:text-sm">bar_chart</span>
+                        <span class="text-xs font-medium">94% réussite</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between pt-4 sm:pt-6 border-t border-neutral-200 dark:border-neutral-700">
+                    <div class="flex flex-col">
+                        <span class="text-xs text-neutral-400 uppercase font-bold">À partir de</span>
+                        <div class="flex items-baseline gap-1">
+                            <span class="text-xl sm:text-2xl font-black text-accent-green price-display" data-price-mad="3800">
+                                3 800 MAD
+                            </span>
+                        </div>
+                    </div>
+                    <a href="#" class="px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-primary text-white text-xs sm:text-sm font-bold hover:bg-accent-green transition-colors duration-200 flex items-center gap-1 sm:gap-2">
+                        <span class="hidden sm:inline">Détails</span>
+                        <span class="sm:hidden">+</span>
+                        <span class="material-symbols-outlined text-xs sm:text-sm">visibility</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Rest of the file remains the same from previous version -->
+<!-- Pourquoi Choisir Diray Centre Section -->
+<section class="px-4 sm:px-6 py-16 lg:py-24 bg-neutral-50 dark:bg-neutral-900/50">
+    <div class="max-w-[1440px] mx-auto">
+        <div class="flex flex-col items-center text-center mb-12 lg:mb-16 gap-3 sm:gap-4 instant-show">
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black text-primary dark:text-white tracking-tight uppercase">
+                Pourquoi Choisir Diray Centre
+            </h2>
+            <div class="w-16 sm:w-20 lg:w-24 h-1 sm:h-2 bg-accent-green rounded-full"></div>
+            <p class="text-neutral-500 dark:text-neutral-400 max-w-[650px] text-base sm:text-lg">
+                Une approche globale unique pour assurer votre réussite professionnelle et personnelle.
+            </p>
+        </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 xl:gap-10">
+        <div class="group p-6 sm:p-8 lg:p-10 rounded-xl sm:rounded-2xl lg:rounded-[2rem] jpg border border-neutral-100 dark:border-neutral-800 hover:border-accent-green/30 transition-transform duration-300 hover:-translate-y-1 will-change-transform">
+            <div class="size-12 sm:size-14 lg:size-16 rounded-lg sm:rounded-xl lg:rounded-2xl bg-accent-green/10 text-accent-green flex items-center justify-center mb-6 lg:mb-8 group-hover:bg-accent-green group-hover:text-white transition-colors duration-300">
+                <span class="material-symbols-outlined text-2xl sm:text-3xl lg:text-4xl">verified</span>
+            </div>
+            <h3 class="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4">Certifications Reconnues</h3>
+            <p class="text-neutral-500 dark:text-neutral-400 text-sm sm:text-base leading-relaxed">
+                Programmes reconnus nationalement avec taux de réussite supérieurs à 95%.
+            </p>
+        </div>
+
+        <div class="group p-6 sm:p-8 lg:p-10 rounded-xl sm:rounded-2xl lg:rounded-[2rem] jpg border border-neutral-100 dark:border-neutral-800 hover:border-accent-green/30 transition-transform duration-300 hover:-translate-y-1 will-change-transform">
+            <div class="size-12 sm:size-14 lg:size-16 rounded-lg sm:rounded-xl lg:rounded-2xl bg-accent-green/10 text-accent-green flex items-center justify-center mb-6 lg:mb-8 group-hover:bg-accent-green group-hover:text-white transition-colors duration-300">
+                <span class="material-symbols-outlined text-2xl sm:text-3xl lg:text-4xl">support_agent</span>
+            </div>
+            <h3 class="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4">Accompagnement Personnalisé</h3>
+            <p class="text-neutral-500 dark:text-neutral-400 text-sm sm:text-base leading-relaxed">
+                Soutien complet de A à Z pour votre parcours professionnel.
+            </p>
+        </div>
+
+        <div class="group p-6 sm:p-8 lg:p-10 rounded-xl sm:rounded-2xl lg:rounded-[2rem] jpg border border-neutral-100 dark:border-neutral-800 hover:border-accent-green/30 transition-transform duration-300 hover:-translate-y-1 will-change-transform">
+            <div class="size-12 sm:size-14 lg:size-16 rounded-lg sm:rounded-xl lg:rounded-2xl bg-accent-green/10 text-accent-green flex items-center justify-center mb-6 lg:mb-8 group-hover:bg-accent-green group-hover:text-white transition-colors duration-300">
+                <span class="material-symbols-outlined text-2xl sm:text-3xl lg:text-4xl">trending_up</span>
+            </div>
+            <h3 class="text-lg sm:text-xl lg:text-2xl font-bold mb-3 sm:mb-4">Suivi Post-formation</h3>
+            <p class="text-neutral-500 dark:text-neutral-400 text-sm sm:text-base leading-relaxed">
+                Un conseiller dédié même après votre certification.
+            </p>
+        </div>
+        </div>
+    </div>
+</section>
+
+<!-- Formation sur mesure entreprise -->
+<section class="px-4 sm:px-6 py-16 lg:py-24 jpg">
+    <div class="max-w-[1440px] mx-auto">
+        <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+        <!-- Image - Hidden on Mobile/Tablet -->
+        <div class="relative rounded-xl sm:rounded-2xl lg:rounded-[2.5rem] overflow-hidden aspect-square shadow-xl lg:shadow-2xl zoom-on-hover order-2 lg:order-1 hidden lg:block will-change-transform" 
+             style="background-image: url('https://plus.unsplash.com/premium_photo-1661297503449-5e2aa67d94a0?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'); background-size: cover; background-position: center;">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end">
+                <div class="p-4 sm:p-6 lg:p-8 text-white">
+                    <h3 class="text-xl sm:text-2xl font-bold mb-2">Formation en entreprise</h3>
+                    <p class="text-white/80 text-sm sm:text-base">Nos experts se déplacent chez vous</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex flex-col gap-6 lg:gap-8 order-1 lg:order-2 instant-show">
+            <span class="text-accent-green font-black uppercase tracking-[0.2em] text-xs">Solutions Entreprises</span>
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black tracking-tight text-primary dark:text-white uppercase leading-tight">
+                Formation sur mesure pour votre entreprise
+            </h2>
+            <p class="text-base sm:text-lg text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                Développez les compétences de vos équipes avec nos programmes sur mesure adaptés à votre secteur.
+            </p>
+            
+            <div class="grid sm:grid-cols-2 gap-4 sm:gap-6">
+                <div class="flex items-start gap-2 sm:gap-3">
+                    <div class="size-6 sm:size-8 rounded-lg bg-accent-green/10 text-accent-green flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-base sm:text-xl">verified_user</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm sm:text-base">Formation sécurité</h4>
+                        <p class="text-xs sm:text-sm text-neutral-500 mt-1">Normes HSE, SST, prévention des risques industriels.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-2 sm:gap-3">
+                    <div class="size-6 sm:size-8 rounded-lg bg-accent-green/10 text-accent-green flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-base sm:text-xl">construction</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm sm:text-base">Équipements fournis</h4>
+                        <p class="text-xs sm:text-sm text-neutral-500 mt-1">Matériel pédagogique complet inclus dans le forfait.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-2 sm:gap-3">
+                    <div class="size-6 sm:size-8 rounded-lg bg-accent-green/10 text-accent-green flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-base sm:text-xl">groups</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm sm:text-base">Formation continue</h4>
+                        <p class="text-xs sm:text-sm text-neutral-500 mt-1">Programmes de mise à niveau et développement des compétences.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start gap-2 sm:gap-3">
+                    <div class="size-6 sm:size-8 rounded-lg bg-accent-green/10 text-accent-green flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-base sm:text-xl">dashboard_customize</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm sm:text-base">Programmes sur mesure</h4>
+                        <p class="text-xs sm:text-sm text-neutral-500 mt-1">Conception pédagogique adaptée à votre secteur d'activité.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pt-4">
+                <a href="{% url 'diray:contact_centers' %}" class="flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-accent-green text-white rounded-lg sm:rounded-xl font-bold hover:scale-[1.03] transition-transform duration-300 group will-change-transform">
+                    <span class="text-sm sm:text-base">Demander un devis personnalisé</span>
+                    <span class="material-symbols-outlined text-base sm:text-lg group-hover:translate-x-1 transition-transform duration-200">arrow_forward</span>
+                </a>
+                <p class="text-xs sm:text-sm text-neutral-500 mt-2 sm:mt-3">Réponse sous 24h ouvrées • Devis gratuit et sans engagement</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Témoignages Section -->
+<section id="testimonials" class="px-4 sm:px-6 py-16 lg:py-24 bg-neutral-50 dark:bg-neutral-900/50">
+    <div class="max-w-[1440px] mx-auto">
+        <div class="max-w-4xl mx-auto text-center mb-12 lg:mb-16 instant-show">
+        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-black mb-4 sm:mb-6 uppercase tracking-tight">Ils nous font confiance</h2>
+        <p class="text-neutral-500 dark:text-neutral-400 text-sm sm:text-base">Plus de 2 500 parcours professionnels transformés avec notre accompagnement sur mesure.</p>
+    </div>
+    
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div class="p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl lg:rounded-3xl bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 shadow-sm hover:shadow-md transition-shadow duration-300 hover-lift will-change-transform content-visibility-auto">
+            <div class="flex gap-1 text-accent-gold mb-4 sm:mb-6">
+                {% for i in "12345" %}<span class="material-symbols-outlined text-sm fill-1">star</span>{% endfor %}
+            </div>
+            <p class="text-neutral-600 dark:text-neutral-300 italic text-sm sm:text-base mb-6 lg:mb-8">
+                "Wah daba f Diray Centre rah 3tawni l'compétences li khasni bach nweli chef d'équipe f soudage. Khdma mzyana bzf al hamdolila!"
+            </p>
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="size-8 sm:size-10 lg:size-12 rounded-full bg-neutral-200" style="background-image: url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'); background-size: cover;"></div>
+                <div>
+                    <h4 class="font-bold text-sm sm:text-base">Ahmed E.</h4>
+                    <p class="text-xs sm:text-sm text-neutral-500">Soudeur Certifié • Complexe Industriel</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl lg:rounded-3xl bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 shadow-sm hover:shadow-md transition-shadow duration-300 hover-lift will-change-transform content-visibility-auto">
+            <div class="flex gap-1 text-accent-gold mb-4 sm:mb-6">
+                {% for i in "12345" %}<span class="material-symbols-outlined text-sm fill-1">star</span>{% endfor %}
+            </div>
+            <p class="text-neutral-600 dark:text-neutral-300 italic text-sm sm:text-base mb-6 lg:mb-8">
+                "Fi Diray Centre tealmt bach ndir l'installations électriques b sécurité. Daba kaynin l'khedma 3ndi w kaytla3o flous!"
+            </p>
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="size-8 sm:size-10 lg:size-12 rounded-full bg-neutral-200" style="background-image: url('https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'); background-size: cover;"></div>
+                <div>
+                    <h4 class="font-bold text-sm sm:text-base">Fatima Z.</h4>
+                    <p class="text-xs sm:text-sm text-neutral-500">Électricienne Bâtiment • Auto-entrepreneuse</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl lg:rounded-3xl bg-white dark:bg-neutral-800 border border-neutral-100 dark:border-neutral-700 shadow-sm hover:shadow-md transition-shadow duration-300 hover-lift will-change-transform content-visibility-auto">
+            <div class="flex gap-1 text-accent-gold mb-4 sm:mb-6">
+                {% for i in "12345" %}<span class="material-symbols-outlined text-sm fill-1">star</span>{% endfor %}
+            </div>
+            <p class="text-neutral-600 dark:text-neutral-300 italic text-sm sm:text-base mb-6 lg:mb-8">
+                "Formation CACES hia li 7elatli l'mouchkil dyal l'emploi. Daba rah kay3jboni f chantier w kayt3awdo y9olboli l'projets!"
+            </p>
+            <div class="flex items-center gap-3 sm:gap-4">
+                <div class="size-8 sm:size-10 lg:size-12 rounded-full bg-neutral-200" style="background-image: url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80'); background-size: cover;"></div>
+                <div>
+                    <h4 class="font-bold text-sm sm:text-base">Karim T.</h4>
+                    <p class="text-xs sm:text-sm text-neutral-500">Opérateur CACES • Société de BTP</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Call to Action témoignages -->
+    <div class="text-center mt-8 sm:mt-12 instant-show">
+        <a href="#contact" class="inline-flex items-center gap-2 text-accent-green font-bold hover:underline text-sm sm:text-base">
+            <span>Voir plus de témoignages</span>
+            <span class="material-symbols-outlined text-sm sm:text-base">arrow_forward</span>
+        </a>
+    </div>
+</section>
+
+<!-- CTA Final -->
+<section class="px-4 sm:px-6 py-16 lg:py-24">
+    <div class="max-w-[1440px] mx-auto">
+        <div class="bg-gradient-to-r from-accent-green to-accent-green/90 rounded-2xl sm:rounded-3xl lg:rounded-[3rem] p-6 sm:p-8 lg:p-12 xl:p-24 text-center relative overflow-hidden">
+        <div class="relative z-10 max-w-3xl mx-auto">
+            <h2 class="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-white mb-6 lg:mb-8 leading-tight tracking-tight uppercase">
+                Prêt à transformer votre carrière ?
+            </h2>
+            <p class="text-base sm:text-lg lg:text-xl text-white/80 mb-8 lg:mb-12">
+                Premier entretien gratuit avec nos conseillers.
+            </p>
+
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+                <a class="px-6 sm:px-8 py-3 sm:py-4 bg-white text-accent-green rounded-xl font-bold hover:bg-neutral-100 transition-colors flex items-center gap-2 will-change-transform"
+                   href="tel:+212779259942">
+                    <span class="material-symbols-outlined">call</span>
+                    Appeler le centre
+                </a>
+
+                <a class="px-6 sm:px-8 py-3 sm:py-4 bg-white/20 text-white rounded-xl font-bold hover:bg-white/30 transition-colors border border-white/30 will-change-transform"
+                       href="{% url 'diray:contact_centers' %}">
+                        Prendre rendez-vous
+                    </a>
+                </div>
+
+                <p class="text-white/60 text-xs sm:text-sm mt-6">
+                    📍 Casablanca • 🕐 Lundi–Vendredi 9h–18h
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

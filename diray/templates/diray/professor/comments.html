@@ -1,0 +1,114 @@
+{% extends 'diray/professor/base_professor.html' %}
+{% load static %}
+
+{% block header_title %}Interactions Étudiants{% endblock %}
+{% block header_subtitle %}Questions et échanges sur vos contenus pédagogiques.{% endblock %}
+
+{% block professor_content %}
+<div class="space-y-8">
+    <!-- Header with Stats -->
+    <div class="glass-card p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-4">
+            <div class="size-12 rounded-xl bg-brand-light text-brand flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl">forum</span>
+            </div>
+            <div>
+                <h2 class="text-xs font-black uppercase tracking-widest opacity-50 mb-1" style="color: var(--prof-text-muted);">Fil de discussion</h2>
+                <div class="flex items-center gap-2">
+                    <span class="text-xl font-black tracking-tight" style="color: var(--prof-text-main);">
+                        {% if selected_session %}
+                            {{ selected_session.start_date|date:"F Y" }}
+                        {% else %}
+                            Tous les messages
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-hover border border-prof">
+            <span class="text-2xl font-black text-brand">{{ comments.count }}</span>
+            <span class="text-xs font-bold uppercase tracking-widest opacity-70" style="color: var(--prof-text-muted);">Questions</span>
+        </div>
+    </div>
+
+    <!-- Active Threads -->
+    <div class="space-y-6">
+        {% for comment in comments %}
+        <div class="glass-card overflow-hidden group transition-all hover:bg-surface-hover">
+            <!-- Student Question -->
+            <div class="p-6 md:p-8 flex flex-col lg:flex-row gap-8">
+                <div class="flex items-start gap-6 flex-1">
+                    <div class="size-14 rounded-2xl bg-surface-hover text-brand flex items-center justify-center font-black text-lg shadow-inner shrink-0 group-hover:scale-105 transition-transform border border-prof">
+                        {{ comment.student.full_name|first|upper }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <h4 class="text-sm font-black uppercase tracking-tight" style="color: var(--prof-text-main);">{{ comment.student.full_name }}</h4>
+                                <p class="text-[10px] font-bold opacity-60 uppercase tracking-widest mt-0.5" style="color: var(--prof-text-muted);">
+                                    <span class="material-symbols-outlined text-[10px] align-middle mr-1">play_circle</span>
+                                    {{ comment.video.title|truncatechars:40 }}
+                                </p>
+                            </div>
+                            <span class="text-[10px] font-bold opacity-40 lowercase" style="color: var(--prof-text-muted);">{{ comment.created_at|timesince }}</span>
+                        </div>
+                        
+                        <div class="p-6 rounded-2xl bg-surface-hover border border-prof relative mb-6">
+                            <div class="absolute -top-2.5 left-4">
+                                <span class="bg-brand text-white text-[8px] font-black px-2 py-0.5 rounded-lg uppercase tracking-widest shadow-lg shadow-brand/20">Question</span>
+                            </div>
+                            <p class="text-sm font-medium leading-relaxed opacity-80 italic" style="color: var(--prof-text-main);">"{{ comment.content }}"</p>
+                        </div>
+
+                        {% if comment.is_answered %}
+                        <!-- Professor Response Display -->
+                        <div class="flex gap-4 items-start justify-end pl-8 md:pl-20">
+                            <div class="flex-1 text-right">
+                                <div class="flex items-center justify-end gap-2 mb-2">
+                                    <span class="text-[9px] font-bold opacity-40 uppercase tracking-widest" style="color: var(--prof-text-muted);">Répondu</span>
+                                    <span class="material-symbols-outlined text-green-500 text-sm">check_circle</span>
+                                </div>
+                                <div class="p-5 rounded-2xl rounded-tr-none border border-prof text-left relative inline-block w-full bg-prof-surface" style="background-color: var(--prof-surface);">
+                                    <p class="text-sm font-medium leading-relaxed opacity-90" style="color: var(--prof-text-main);">{{ comment.answer_content }}</p>
+                                </div>
+                            </div>
+                            <div class="size-10 rounded-xl bg-brand text-white flex items-center justify-center font-black text-xs shadow-md shrink-0 mt-8">
+                                {{ user.profile.full_name|first|upper }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if not comment.is_answered %}
+                <!-- Reply Form Sidebar -->
+                <div class="lg:w-80 shrink-0 lg:border-l border-prof lg:pl-8 pt-6 lg:pt-0 border-t lg:border-t-0">
+                    <h4 class="text-[9px] font-black uppercase tracking-[0.2em] mb-4 opacity-50" style="color: var(--prof-text-muted);">Action Requise</h4>
+                    <form method="post" action="{% url 'diray:professor_comments' %}" class="space-y-4">
+                        {% csrf_token %}
+                        <input type="hidden" name="comment_id" value="{{ comment.id }}">
+                        <div class="relative">
+                            <textarea name="reply" placeholder="Votre réponse..." 
+                                      class="w-full bg-surface-hover border border-prof rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-brand transition-all h-32 resize-none" style="color: var(--prof-text-main);" required></textarea>
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-brand text-white font-black text-[9px] rounded-xl hover:opacity-90 transition-all uppercase tracking-[0.2em] shadow-lg shadow-brand/20 flex items-center justify-center gap-2">
+                            <span>Envoyer</span>
+                            <span class="material-symbols-outlined text-sm">send</span>
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="py-24 text-center">
+            <div class="size-20 rounded-full bg-surface-hover flex items-center justify-center mx-auto mb-6 opacity-50">
+                <span class="material-symbols-outlined text-4xl" style="color: var(--prof-text-muted);">mark_chat_read</span>
+            </div>
+            <h4 class="text-xl font-black tracking-tight mb-2" style="color: var(--prof-text-main);">Aucune question en attente</h4>
+            <p class="text-sm opacity-60 max-w-sm mx-auto" style="color: var(--prof-text-muted);">Tout est à jour ! Les nouvelles interactions apparaîtront ici.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

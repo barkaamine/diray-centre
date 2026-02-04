@@ -1,0 +1,130 @@
+
+# ==========================================
+# E-LEARNING EXTENSION MODELS
+# ==========================================
+
+class Profile(models.Model):
+    """Extended user profile for role management"""
+    ROLE_CHOICES = [
+        ('STUDENT', 'Étudiant'),
+        ('PROFESSOR', 'Professeur'),
+        ('ADMIN', 'Administrateur'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('PENDING', 'En attente'),
+        ('ACTIVE', 'Actif'),
+        ('SUSPENDED', 'Suspendu'),
+    ]
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='STUDENT')
+    full_name = models.CharField(max_length=200, verbose_name="Nom complet")
+    cin_or_passport = models.CharField(max_length=50, unique=True, verbose_name="CIN ou Passeport")
+    phone_number = models.CharField(max_length=50, verbose_name="Téléphone")
+    city = models.CharField(max_length=100, verbose_name="Ville")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    email_verified = models.BooleanField(default=False, verbose_name="Email vérifié")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.role}"
+
+class ProfessorProfile(models.Model):
+    """Specific profile for professors"""
+    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name='professor_profile')
+    active = models.BooleanField(default=True, verbose_name="Actif")
+    # Add other professor specific fields here (e.g. bio, specialties)
+
+    def __str__(self):
+        return f"Prof. {self.profile.full_name}"
+
+class Session(models.Model):
+    """Classroom session (Live or In-person)"""
+    training = models.ForeignKey(Training, on_delete=models.CASCADE, related_name='sessions')
+    city = models.CharField(max_length=100, verbose_name="Ville de la session")
+    professor = models.ForeignKey(ProfessorProfile, on_delete=models.PROTECT, related_name='sessions')
+    start_datetime = models.DateTimeField(verbose_name="Début")
+    end_datetime = models.DateTimeField(verbose_name="Fin")
+    is_live = models.BooleanField(default=False, verbose_name="Est en direct (Live)")
+    is_active = models.BooleanField(default=True, verbose_name="Session active")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_datetime']
+        verbose_name = "Session"
+        verbose_name_plural = "Sessions"
+
+    def __str__(self):
+        type_str = "LIVE" if self.is_live else self.city
+        return f"{self.training.title} - {type_str} - {self.start_datetime.strftime('%d/%m/%Y %H:%M')}"
+
+class StudentProfile(models.Model):
+    """Specific profile for students with access control"""
+    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name='student_profile')
+    formations_access = models.ManyToManyField(Training, blank=True, related_name='students', verbose_name="Formations accessibles")
+    sessions_access = models.ManyToManyField(Session, blank=True, related_name='students', verbose_name="Sessions accessibles")
+
+    def __str__(self):
+        return f"Étudiant: {self.profile.full_name}"
+
+class RecordedVideo(models.Model):
+    """VOD content for formations"""
+    training = models.ForeignKey(Training, on_delete=models.CASCADE, related_name='videos')
+    title = models.CharField(max_length=200, verbose_name="Titre de la vidéo")
+    video_provider_id = models.CharField(max_length=200, verbose_name="ID VdoCipher / Provider")
+    duration_seconds = models.IntegerField(default=0, verbose_name="Durée (secondes)")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.training.title} - {self.title}"
+
+class LiveRecording(models.Model):
+    """Recording of a live session"""
+    session = models.OneToOneField(Session, on_delete=models.CASCADE, related_name='recording')
+    video_provider_id = models.CharField(max_length=200, verbose_name="ID Recording Provider")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Rec: {self.session}"
+
+class AttendanceLog(models.Model):
+    """Log of student attendance in sessions"""
+    student = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='attendance_logs')
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name='attendance_logs')
+    join_time = models.DateTimeField()
+    leave_time = models.DateTimeField(null=True, blank=True)
+    duration_seconds = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.student.full_name} @ {self.session}"
+
+class VideoProgress(models.Model):
+    """Tracking progress on recorded videos"""
+    student = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='video_progress')
+    video = models.ForeignKey(RecordedVideo, on_delete=models.CASCADE, related_name='progress')
+    watched_seconds = models.IntegerField(default=0)
+    completed = models.BooleanField(default=False)
+    last_watched_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('student', 'video')
+
+    def __str__(self):
+        return f"{self.student.full_name} - {self.video.title} ({self.watched_seconds}s)"
+
+class Comment(models.Model):
+    """Comments on videos"""
+    video = models.ForeignKey(RecordedVideo, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    content = models.TextField()
+    is_deleted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comment by {self.user.full_name} on {self.video}"

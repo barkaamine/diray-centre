@@ -1,0 +1,64 @@
+
+# ==========================================
+# AUTHENTICATION VIEWS
+# ==========================================
+
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib import messages
+
+def register(request):
+    """Handle student registration"""
+    if request.method == 'POST':
+        form = StudentRegistrationForm(request.POST)
+        if form.is_valid():
+            user = User.objects.create_user(
+                username=form.cleaned_data['cin_or_passport'],
+                email=form.cleaned_data['email'],
+                password=form.cleaned_data['password'],
+                first_name=form.cleaned_data['full_name'].split(' ')[0],
+                last_name=' '.join(form.cleaned_data['full_name'].split(' ')[1:])
+            )
+            
+            # Profile is created by signal, but we update it here
+            try:
+                profile = user.profile
+                profile.role = 'STUDENT'
+                profile.full_name = form.cleaned_data['full_name']
+                profile.cin_or_passport = form.cleaned_data['cin_or_passport']
+                profile.phone_number = form.cleaned_data['phone_number']
+                profile.city = form.cleaned_data['city']
+                profile.save()
+            except Exception as e:
+                logger.error(f"Error updating profile: {e}")
+            
+            # Authenticate and login (optional, or redirect to login)
+            login(request, user)
+            messages.success(request, "Compte créé avec succès! En attente de validation.")
+            return redirect('home')
+    else:
+        form = StudentRegistrationForm()
+    
+    return render(request, 'registration/signup.html', {'form': form})
+
+def login_view(request):
+    """Custom login view"""
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+            else:
+                messages.error(request, "Identifiants invalides.")
+        else:
+             messages.error(request, "Identifiants invalides.")
+    
+    form = AuthenticationForm()
+    return render(request, 'registration/login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')

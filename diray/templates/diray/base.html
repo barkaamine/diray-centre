@@ -1,0 +1,772 @@
+<!-- templates/diray/base.html - FIXED MOBILE MENU -->
+<!DOCTYPE html>
+{% load static %}
+<html class="light" lang="fr" dir="ltr">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{% block title %}Diray Centre - Formation Professionnelle & Développement des Compétences{% endblock %}</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" as="style">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+    
+    <!-- SweetAlert for popups -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- AOS for scrolling animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <style>
+        /* Critical CSS - Loads First */
+        .font-arabic { font-family: 'Cairo', sans-serif; }
+        .active-nav { border-bottom: 3px solid #34745C; color: #34745C !important; }
+        
+        /* Remove animations for initial load */
+        .no-animations * {
+            animation: none !important;
+            transition: none !important;
+        }
+        
+        /* Prevent body scroll when menu is open */
+        body.overflow-hidden {
+            overflow: hidden !important;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { 
+            background: #888; 
+            border-radius: 4px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        /* Line clamp utilities */
+        .line-clamp-1 { 
+            overflow: hidden; 
+            display: -webkit-box; 
+            -webkit-box-orient: vertical; 
+            -webkit-line-clamp: 1; 
+        }
+        .line-clamp-2 { 
+            overflow: hidden; 
+            display: -webkit-box; 
+            -webkit-box-orient: vertical; 
+            -webkit-line-clamp: 2; 
+        }
+        
+        /* Floating buttons */
+        .floating-buttons {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .floating-button {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        
+        /* Performance optimizations */
+        .will-change-transform {
+            will-change: transform;
+        }
+        
+        .content-visibility-auto {
+            content-visibility: auto;
+            contain-intrinsic-size: 1px 5000px;
+        }
+        
+        /* Remove all animation delays for faster loading */
+        [class*="stagger-delay"],
+        [class*="delay-"] {
+            animation-delay: 0ms !important;
+        }
+        
+        /* Instant appearance for critical content */
+        .instant-show {
+            opacity: 1 !important;
+            visibility: visible !important;
+            transform: none !important;
+        }
+        
+        /* Image loading states */
+        .img-loading {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Scroll animations */
+        [data-aos] {
+            pointer-events: none;
+        }
+        
+        [data-aos].aos-animate {
+            pointer-events: auto;
+        }
+        
+        /* Training card image fix */
+        .training-card-image-container {
+            position: relative;
+            overflow: hidden;
+            background-color: #f1f5f9;
+        }
+        
+        .training-card-image-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Currency update styles */
+        .price-container {
+            transition: opacity 0.3s ease;
+        }
+        
+        .price-loading {
+            opacity: 0.5;
+        }
+        
+        /* Image fallback system */
+        .training-image {
+            background-color: #34745C; /* Fallback color */
+        }
+        
+        .training-image.fallback {
+            background: linear-gradient(135deg, #34745C 0%, #0056b3 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+    
+    <!-- Tailwind Config -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#141414",
+                        "accent-blue": "#0056b3",
+                        "accent-green": "#34745C",
+                        "accent-gold": "#C5A059",
+                        "background-light": "#ffffff",
+                        "background-dark": "#121212",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "arabic": ["Cairo", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    screens: {
+                        'xs': '475px',
+                        '3xl': '1600px',
+                    },
+                },
+            },
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer base {
+            body { 
+                font-family: 'Plus Jakarta Sans', sans-serif; 
+                overflow-x: hidden;
+                @apply bg-background-light dark:bg-background-dark text-primary dark:text-neutral-200;
+            }
+            .rtl { direction: rtl; text-align: right; }
+        }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Selection color */
+        ::selection {
+            @apply bg-accent-blue/20;
+        }
+        
+        /* Prose styles for rich text */
+        .prose {
+            @apply text-neutral-600 dark:text-neutral-400;
+        }
+        
+        .prose h1, .prose h2, .prose h3, .prose h4 {
+            @apply text-primary dark:text-white font-bold;
+        }
+        
+        .prose p {
+            @apply my-4 leading-relaxed;
+        }
+        
+        .dark .prose {
+            color: #d1d5db;
+        }
+        
+        .dark .prose h1, .dark .prose h2, .dark .prose h3, .dark .prose h4 {
+            color: #ffffff;
+        }
+        
+        /* Training card styles - Optimized */
+        .training-card {
+            @apply bg-white dark:bg-neutral-800 rounded-xl border border-neutral-100 dark:border-neutral-700 shadow-sm;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .training-card:hover {
+            @apply shadow-md;
+            transform: translateY(-2px);
+        }
+        
+        .training-card-content {
+            @apply p-4 flex flex-col h-full;
+        }
+        
+        /* Optimized animations - only on hover */
+        @media (hover: hover) {
+            .hover-lift:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15);
+            }
+            
+            .zoom-on-hover:hover {
+                transform: scale(1.02);
+            }
+        }
+        
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Animation for elements appearing on scroll */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="min-h-screen relative no-animations" data-no-animations="true">
+    
+    {% include 'diray/partials/header.html' %}
+    
+    <main class="{% block main_class %}max-w-[1440px] mx-auto{% endblock %} overflow-hidden w-full">
+        {% block content %}{% endblock %}
+    </main>
+    
+    {% include 'diray/partials/footer.html' %}
+    
+    {% include 'diray/partials/floating_buttons.html' %}
+    
+    <!-- JavaScript - Optimized -->
+    <script>
+        // Init theme immediately to prevent flash
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // Current User Data for Auto-fill
+        window.currentUser = {
+            isAuthenticated: {{ user.is_authenticated|yesno:"true,false" }},
+            {% if user.is_authenticated %}
+            data: {
+                full_name: "{{ user.get_full_name|default:user.username|escapejs }}",
+                email: "{{ user.email|escapejs }}",
+                phone: "{{ user.profile.phone|default:''|escapejs }}",
+                city: "{{ user.profile.city|default:''|escapejs }}"
+            }
+            {% else %}
+            data: null
+            {% endif %}
+        };
+
+        // Theme Management
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+                updateThemeIcons('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                updateThemeIcons('light');
+            }
+        }
+        
+        function updateThemeIcons(theme) {
+            const themeIcon = document.getElementById('theme-icon');
+            const mobileThemeIcon = document.getElementById('mobile-theme-icon');
+            const mobileThemeLabel = document.getElementById('mobile-theme-label');
+            
+            if (theme === 'dark') {
+                if (themeIcon) themeIcon.textContent = 'dark_mode';
+                if (mobileThemeIcon) mobileThemeIcon.textContent = 'dark_mode';
+                if (mobileThemeLabel) mobileThemeLabel.textContent = 'Sombre';
+            } else {
+                if (themeIcon) themeIcon.textContent = 'light_mode';
+                if (mobileThemeIcon) mobileThemeIcon.textContent = 'light_mode';
+                if (mobileThemeLabel) mobileThemeLabel.textContent = 'Clair';
+            }
+        }
+        
+        function toggleTheme() {
+            const html = document.documentElement;
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                updateThemeIcons('light');
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                updateThemeIcons('dark');
+            }
+        }
+        
+        // Initialize AOS
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize theme
+            initTheme();
+            
+            // Initialize scroll animations
+            AOS.init({
+                duration: 600,
+                easing: 'ease-out-cubic',
+                once: true,
+                mirror: false,
+                offset: 100
+            });
+            
+            // Remove animation blocker
+            document.body.classList.remove('no-animations');
+            document.body.removeAttribute('data-no-animations');
+            
+            // Image fallback system
+            function handleImageError(img) {
+                console.log('Image failed to load:', img.src);
+                img.style.display = 'none';
+                const parent = img.parentElement;
+                if (parent) {
+                    parent.classList.add('training-image', 'fallback');
+                    const icon = document.createElement('span');
+                    icon.className = 'material-symbols-outlined text-white text-4xl';
+                    icon.textContent = 'school';
+                    parent.appendChild(icon);
+                }
+            }
+            
+            // Initialize all images with error handling
+            document.querySelectorAll('img').forEach(img => {
+                img.onerror = function() {
+                    handleImageError(this);
+                };
+                
+                if (!img.src || img.src.includes('undefined')) {
+                    handleImageError(img);
+                }
+                
+                if (img.classList.contains('training-image') || img.parentElement.classList.contains('training-image')) {
+                    img.style.display = 'block';
+                    img.style.opacity = '1';
+                }
+            });
+            
+            // Set active navigation
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('header a').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active-nav');
+                }
+            });
+            
+            // Scroll animations
+            function initScrollAnimations() {
+                const animatedElements = document.querySelectorAll('.animate-on-scroll');
+                
+                if ('IntersectionObserver' in window) {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('visible');
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, {
+                        threshold: 0.1,
+                        rootMargin: '0px 0px -50px 0px'
+                    });
+                    
+                    animatedElements.forEach(el => observer.observe(el));
+                } else {
+                    animatedElements.forEach(el => el.classList.add('visible'));
+                }
+            }
+            
+            initScrollAnimations();
+            
+            // Expose functions globally
+            window.toggleTheme = toggleTheme;
+            window.showSuccess = showSuccess;
+            window.showError = showError;
+            window.showLoading = showLoading;
+            window.closeLoading = closeLoading;
+            window.scrollToTop = scrollToTop;
+        });
+        
+        // Enhanced Currency Management System
+        class CurrencyManager {
+            constructor() {
+                this.currentCurrency = localStorage.getItem('diray_currency') || 'MAD';
+                this.rates = {};
+                this.currencyFormatters = {};
+                this.init();
+            }
+            
+            async init() {
+                const cachedRates = localStorage.getItem('diray_currency_rates');
+                if (cachedRates) {
+                    this.rates = JSON.parse(cachedRates);
+                }
+                
+                this.initFormatters();
+                this.updateAllPrices();
+                this.setupEventListeners();
+                
+                setTimeout(() => this.fetchRates(), 1000);
+            }
+            
+            initFormatters() {
+                this.currencyFormatters = {
+                    'MAD': new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'MAD', minimumFractionDigits: 0 }),
+                    'EUR': new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 0 }),
+                    'USD': new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }),
+                    'GBP': new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0 }),
+                    'CAD': new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', minimumFractionDigits: 0 }),
+                    'AED': new Intl.NumberFormat('ar-AE', { style: 'currency', currency: 'AED', minimumFractionDigits: 0 }),
+                    'CHF': new Intl.NumberFormat('de-CH', { style: 'currency', currency: 'CHF', minimumFractionDigits: 0 }),
+                };
+            }
+            
+            async fetchRates() {
+                try {
+                    const response = await fetch('/api/currency-rates/');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+                            this.rates = data.rates;
+                            localStorage.setItem('diray_currency_rates', JSON.stringify(data.rates));
+                            this.updateAllPrices();
+                        }
+                    }
+                } catch (error) {
+                    this.rates = {
+                        'MAD': 1,
+                        'EUR': 0.093,
+                        'USD': 0.100,
+                        'GBP': 0.079,
+                        'CAD': 0.136,
+                        'AED': 0.367,
+                        'CHF': 0.090,
+                    };
+                }
+            }
+            
+            convertPrice(amount, fromCurrency, toCurrency) {
+                if (!amount || isNaN(amount)) return 0;
+                if (fromCurrency === toCurrency) return amount;
+                
+                const amountNum = parseFloat(amount);
+                
+                if (fromCurrency === 'MAD') {
+                    return amountNum * (this.rates[toCurrency] || 1);
+                }
+                
+                const inMAD = amountNum / (this.rates[fromCurrency] || 1);
+                return inMAD * (this.rates[toCurrency] || 1);
+            }
+            
+            formatPrice(price, currency) {
+                const priceNum = parseFloat(price);
+                if (isNaN(priceNum)) return '0';
+                
+                if (this.currencyFormatters[currency]) {
+                    return this.currencyFormatters[currency].format(priceNum);
+                }
+                
+                return `${Math.round(priceNum).toLocaleString('fr-FR')} ${currency}`;
+            }
+            
+            updateAllPrices() {
+                document.querySelectorAll('.price-container').forEach(container => {
+                    container.classList.add('price-loading');
+                });
+                
+                document.querySelectorAll('[data-price-mad]').forEach(element => {
+                    const priceMAD = parseFloat(element.getAttribute('data-price-mad')) || 0;
+                    const convertedPrice = this.convertPrice(priceMAD, 'MAD', this.currentCurrency);
+                    const formattedPrice = this.formatPrice(convertedPrice, this.currentCurrency);
+                    
+                    element.textContent = formattedPrice;
+                    
+                    const priceContainer = element.closest('.price-container');
+                    if (priceContainer) {
+                        priceContainer.classList.remove('price-loading');
+                    }
+                });
+                
+                document.querySelectorAll('.currency-indicator').forEach(element => {
+                    element.textContent = this.currentCurrency;
+                });
+                
+                document.querySelectorAll('.current-currency').forEach(element => {
+                    element.textContent = this.currentCurrency;
+                });
+                
+                localStorage.setItem('diray_currency', this.currentCurrency);
+                this.saveCurrencyPreference();
+            }
+            
+            async saveCurrencyPreference() {
+                try {
+                    const csrfToken = this.getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+                    if (!csrfToken) return;
+                    
+                    const response = await fetch('{% url "diray:update_currency" %}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({ currency: this.currentCurrency }),
+                    });
+                } catch (error) {
+                    // Silent fail
+                }
+            }
+            
+            getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            setCurrency(currency) {
+                if (this.rates[currency] !== undefined || currency === 'MAD') {
+                    this.currentCurrency = currency;
+                    this.updateAllPrices();
+                    
+                    document.querySelectorAll('.currency-dropdown').forEach(dropdown => {
+                        dropdown.classList.add('hidden');
+                    });
+                    
+                    const mobileMenu = document.getElementById('mobile-currency-menu');
+                    if (mobileMenu) mobileMenu.classList.add('hidden');
+                    
+                    return true;
+                }
+                return false;
+            }
+            
+            setupEventListeners() {
+                document.querySelectorAll('.currency-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const currency = option.getAttribute('data-currency');
+                        if (this.setCurrency(currency)) {
+                            window.dispatchEvent(new CustomEvent('currencyChanged', { 
+                                detail: { currency: currency }
+                            }));
+                        }
+                    });
+                });
+                
+                document.querySelectorAll('#mobile-currency-menu .currency-option').forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const currency = option.getAttribute('data-currency');
+                        if (this.setCurrency(currency)) {
+                            window.dispatchEvent(new CustomEvent('currencyChanged', { 
+                                detail: { currency: currency }
+                            }));
+                        }
+                    });
+                });
+            }
+        }
+        
+        // Initialize Currency Manager when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            window.currencyManager = new CurrencyManager();
+        });
+
+        // Real-time updates polling
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if user.is_authenticated %}
+            const pollInterval = 30000; // 30 seconds
+            
+            function checkUpdates() {
+                fetch('{% url "diray:check_updates_ajax" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // 1. Update Notification Badge
+                            const badge = document.getElementById('notification-badge');
+                            if (badge) {
+                                if (data.unread_count > 0) {
+                                    badge.textContent = data.unread_count;
+                                    badge.classList.remove('hidden');
+                                } else {
+                                    badge.classList.add('hidden');
+                                }
+                            }
+                            
+                            // 2. Update Notification Menu
+                            const menu = document.getElementById('notification-menu');
+                            if (menu) {
+                                if (data.notifications.length === 0) {
+                                    menu.innerHTML = '<div class="p-8 text-center text-xs text-neutral-500 empty-msg">Aucune notification</div>';
+                                } else {
+                                    let html = '';
+                                    data.notifications.forEach(note => {
+                                        // Construct URL manually to avoid JS template complexity
+                                        const readUrl = `/notifications/read/${note.id}/`;
+                                        html += `
+                                            <a href="${readUrl}" class="block p-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg transition">
+                                                <div class="font-bold text-xs mb-1">${note.title}</div>
+                                                <div class="text-xs text-neutral-500 line-clamp-2">${note.message}</div>
+                                                <div class="text-[10px] text-neutral-400 mt-1">${note.created_at}</div>
+                                            </a>
+                                        `;
+                                    });
+                                    menu.innerHTML = html;
+                                }
+                            }
+                            
+                            // 3. Dispatch Live Streams update event
+                            window.dispatchEvent(new CustomEvent('liveStreamsUpdate', {
+                                detail: data.active_streams
+                            }));
+                        }
+                    })
+                    .catch(err => console.error('Error polling for updates:', err));
+            }
+
+            // Start polling
+            setInterval(checkUpdates, pollInterval);
+            // Initial check
+            setTimeout(checkUpdates, 2000); 
+            {% endif %}
+        });
+        
+        // Load non-critical resources after page is interactive
+        window.addEventListener('load', function() {
+            const cairoFont = document.createElement('link');
+            cairoFont.rel = 'stylesheet';
+            cairoFont.href = 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap';
+            cairoFont.media = 'all';
+            document.head.appendChild(cairoFont);
+        });
+        
+        // Alert functions
+        function showSuccess(message) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Succès!',
+                text: message,
+                confirmButtonColor: '#34745C',
+                confirmButtonText: 'OK'
+            });
+        }
+        
+        function showError(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: message,
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'OK'
+            });
+        }
+        
+        function showLoading() {
+            Swal.fire({
+                title: 'Traitement en cours...',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        }
+        
+        function closeLoading() {
+            Swal.close();
+        }
+        
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

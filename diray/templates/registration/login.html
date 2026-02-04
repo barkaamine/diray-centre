@@ -1,0 +1,198 @@
+{% extends 'diray/base.html' %}
+{% load static %}
+
+{% block title %}Connexion - Diray Centre{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Standardized Form Input Styles */
+    .auth-input {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border-radius: 1rem;
+        border: 2px solid #f3f4f6;
+        background-color: #ffffff;
+        font-weight: 500;
+        transition: all 0.2s;
+        outline: none;
+    }
+    .dark .auth-input {
+        border-color: #374151;
+        background-color: #111827;
+        color: #ffffff;
+    }
+    .dark .auth-input:hover {
+        border-color: #4b5563;
+    }
+    .dark .auth-input:focus {
+        border-color: #34745C;
+        background-color: #030712;
+    }
+    .auth-input:focus {
+        border-color: #34745C;
+        box-shadow: 0 0 0 4px rgba(52, 116, 92, 0.1);
+    }
+    .auth-input::placeholder {
+        color: #9ca3af;
+    }
+    
+    /* Error state */
+    .auth-input-error {
+        border-color: #ef4444 !important;
+    }
+    
+    /* Animation for errors */
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+    }
+    .animate-shake {
+        animation: shake 0.4s ease-in-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-stretch overflow-hidden">
+    <!-- Left Side - Brand Display (Hidden on Mobile/Tablet < LG) -->
+    <div class="hidden lg:flex lg:w-1/2 relative bg-neutral-900 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-accent-green/40 to-black/60 z-10"></div>
+        <img src="{% static 'images/auth_bg.png' %}" alt="Training Center" class="absolute inset-0 w-full h-full object-cover opacity-90 scale-105">
+        
+        <div class="relative z-20 flex flex-col justify-between p-16 w-full text-white">
+            <div>
+                <a href="{% url 'diray:home' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all font-semibold">
+                    <span class="material-symbols-outlined text-sm">arrow_back</span>
+                    <span>Retour à l'accueil</span>
+                </a>
+            </div>
+            
+            <div class="max-w-xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-green/20 border border-accent-green/30 text-accent-green text-[10px] font-black uppercase tracking-widest mb-6">
+                    <span class="size-1.5 bg-accent-green rounded-full animate-pulse"></span>
+                    Accès Privé
+                </div>
+                <h1 class="text-6xl font-black mb-6 leading-[1.1] tracking-tighter">
+                    Prêt pour <br/>
+                    <span class="text-accent-green">la réussite ?</span>
+                </h1>
+                <p class="text-xl text-white/70 max-w-sm leading-relaxed font-medium">
+                    Reconnectez-vous à votre plateforme pour continuer votre montée en compétences.
+                </p>
+            </div>
+            
+            <div class="flex items-center justify-between text-xs text-white/40">
+                <p>© {% now "Y" %} Diray Centre.</p>
+                <div class="flex gap-4">
+                    <a href="#" class="hover:text-white transition-colors">Aide</a>
+                    <a href="#" class="hover:text-white transition-colors">Support</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side - Authentication Form -->
+    <div class="w-full lg:w-1/2 bg-[#fcfcfc] dark:bg-[#0a0a0a] flex items-center justify-center p-6 sm:p-12 md:p-16 relative overflow-y-auto">
+        <div class="w-full max-md py-8">
+            <!-- Mobile Header Logo -->
+            <div class="flex justify-center lg:justify-start mb-12">
+                <img src="https://www.diray-formation.com/public/images/diray.png" alt="Diray" class="h-10 w-auto">
+            </div>
+
+            <div class="mb-10 text-center lg:text-left">
+                <h2 class="text-4xl font-black text-neutral-900 dark:text-white leading-tight mb-3 tracking-tight">Ravi de vous revoir</h2>
+                <p class="text-neutral-500 dark:text-neutral-400 font-medium">
+                    Entrez vos accès pour rejoindre votre espace.
+                </p>
+            </div>
+
+            <form method="post" action="{% url 'diray:login' %}" class="space-y-6">
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                <div class="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm flex items-center gap-3 animate-shake">
+                    <span class="material-symbols-outlined shrink-0">report</span>
+                    <p class="font-bold">Identifiants incorrects ou compte inactif.</p>
+                </div>
+                {% endif %}
+
+                <div class="space-y-5">
+                    {% for field in form %}
+                    <div class="space-y-2">
+                        <label for="{{ field.id_for_label }}" class="text-sm font-bold text-neutral-700 dark:text-neutral-300 flex justify-between">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-red-500 text-xs">*</span>{% endif %}
+                        </label>
+                        <div class="relative group">
+                            <input type="{{ field.field.widget.input_type|default:'text' }}" 
+                                   name="{{ field.name }}" 
+                                   id="{{ field.id_for_label }}"
+                                   placeholder="{{ field.label }}"
+                                   {% if field.value and field.field.widget.input_type != 'password' %}value="{{ field.value }}"{% endif %}
+                                   {% if field.field.required %}required{% endif %}
+                                   class="auth-input {% if field.errors %}auth-input-error{% endif %} pl-12">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-neutral-400 group-focus-within:text-accent-green transition-colors">
+                                {% if 'username' in field.name or 'email' in field.name %}
+                                <span class="material-symbols-outlined text-xl">person</span>
+                                {% elif 'password' in field.name %}
+                                <span class="material-symbols-outlined text-xl">lock</span>
+                                {% else %}
+                                <span class="material-symbols-outlined text-xl">edit</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if field.errors %}
+                        <p class="text-xs text-red-600 font-bold mt-1.5 ml-1">{{ field.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center gap-3 cursor-pointer group select-none">
+                        <div class="relative flex items-center shrink-0">
+                            <input type="checkbox" name="remember" id="remember_me" class="peer appearance-none size-5 rounded-lg border-2 border-neutral-200 dark:border-neutral-800 checked:bg-accent-green checked:border-accent-green transition-all cursor-pointer">
+                            <span class="material-symbols-outlined absolute opacity-0 peer-checked:opacity-100 text-white text-[16px] pointer-events-none left-[2px]">check</span>
+                        </div>
+                        <span class="text-sm font-bold text-neutral-500 dark:text-neutral-400 group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">Rester connecté</span>
+                    </label>
+                    <a href="#" class="text-sm font-bold text-accent-green hover:underline underline-offset-4">Oublié ?</a>
+                </div>
+
+                <button type="submit" class="w-full py-4 px-6 bg-accent-green hover:bg-[#2d6550] text-white rounded-2xl font-black text-lg shadow-xl shadow-accent-green/10 hover:shadow-2xl hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-3 group">
+                    <span>Accéder à l'espace</span>
+                    <span class="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+                </button>
+            </form>
+
+            <div class="relative my-12">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-neutral-200 dark:border-neutral-800"></div>
+                </div>
+                <div class="relative flex justify-center text-[10px] font-black uppercase tracking-widest">
+                    <span class="px-6 bg-[#fcfcfc] dark:bg-[#0a0a0a] text-neutral-400 dark:text-neutral-500">Ou s'identifier avec</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <button class="flex items-center justify-center gap-3 p-4 bg-white dark:bg-neutral-900 border-2 border-neutral-100 dark:border-neutral-800 rounded-2xl hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:border-neutral-200 dark:hover:border-neutral-700 transition-all font-bold text-sm dark:text-white">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="size-5" alt="">
+                    <span>Google</span>
+                </button>
+                <button class="flex items-center justify-center gap-3 p-4 bg-white dark:bg-neutral-900 border-2 border-neutral-100 dark:border-neutral-800 rounded-2xl hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:border-neutral-200 dark:hover:border-neutral-700 transition-all font-bold text-sm dark:text-white">
+                    <img src="https://www.svgrepo.com/show/448234/linkedin.svg" class="size-5" alt="">
+                    <span>LinkedIn</span>
+                </button>
+            </div>
+
+            <div class="mt-12 text-center">
+                <p class="text-neutral-500 dark:text-neutral-400 font-bold">
+                    Nouveau ici ? 
+                    <a href="{% url 'diray:register' %}" class="text-accent-green hover:underline decoration-2 underline-offset-4 ml-1">Créer un compte</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

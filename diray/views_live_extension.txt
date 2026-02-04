@@ -1,0 +1,91 @@
+
+# ==========================================
+# LIVE SESSION VIEW
+# ==========================================
+
+@login_required
+def live_session(request, session_id):
+    """Live session view for Agora streaming"""
+    try:
+        profile = request.user.profile
+        student_profile = profile.student_profile
+    except:
+        return redirect('diray:home')
+    
+    # Get Session and check access
+    session = get_object_or_404(Session, id=session_id, is_live=True, is_active=True)
+    
+    if not student_profile.sessions_access.filter(id=session.id).exists():
+        messages.error(request, "Vous n'avez pas accès à cette session.")
+        return redirect('diray:dashboard')
+    
+    # Check if session is currently live (within time window)
+    now = timezone.now()
+    is_currently_live = session.start_datetime <= now <= session.end_datetime
+    
+    # Generate Agora credentials (placeholder - replace with actual Agora SDK)
+    agora_app_id = "YOUR_AGORA_APP_ID"  # Replace with actual App ID
+    agora_channel = f"session_{session.id}"
+    agora_token = None  # Generate token using Agora SDK
+    
+    # Log attendance
+    if is_currently_live:
+        AttendanceLog.objects.create(
+            student=profile,
+            session=session,
+            join_time=now
+        )
+    
+    context = {
+        'session': session,
+        'is_currently_live': is_currently_live,
+        'agora_app_id': agora_app_id,
+        'agora_channel': agora_channel,
+        'agora_token': agora_token,
+    }
+    
+    return render(request, 'diray/live/live_session.html', context)
+
+
+@login_required
+def recorded_videos_list(request, training_slug):
+    """List all recorded videos for a training"""
+    try:
+        profile = request.user.profile
+        student_profile = profile.student_profile
+    except:
+        return redirect('diray:home')
+    
+    # Get Training and check access
+    training = get_object_or_404(Training, slug=training_slug)
+    if not student_profile.formations_access.filter(id=training.id).exists():
+        messages.error(request, "Vous n'avez pas accès à cette formation.")
+        return redirect('diray:dashboard')
+    
+    # Get all videos
+    videos = RecordedVideo.objects.filter(training=training, is_active=True).order_by('created_at')
+    
+    # Get progress for each video
+    video_progress = {}
+    for video in videos:
+        try:
+            progress = VideoProgress.objects.get(student=profile, video=video)
+            video_progress[video.id] = {
+                'watched_seconds': progress.watched_seconds,
+                'completed': progress.completed,
+                'percentage': int((progress.watched_seconds / video.duration_seconds) * 100) if video.duration_seconds > 0 else 0
+            }
+        except VideoProgress.DoesNotExist:
+            video_progress[video.id] = {
+                'watched_seconds': 0,
+                'completed': False,
+                'percentage': 0
+            }
+    
+    context = {
+        'training': training,
+        'videos': videos,
+        'video_progress': video_progress,
+    }
+    
+    return render(request, 'diray/videos/videos_list.html', context)

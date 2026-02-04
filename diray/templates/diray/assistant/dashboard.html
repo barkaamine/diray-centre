@@ -1,0 +1,590 @@
+{% extends "diray/base.html" %}
+{% load static %}
+
+{% block title %}Assistant Dashboard - Diray{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #4f46e5;
+        --primary-hover: #4338ca;
+        --sidebar-bg: #f8fafc;
+        --content-bg: #ffffff;
+        --border-color: #e2e8f0;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+    }
+
+    body {
+        background-color: var(--content-bg) !important;
+        color: var(--text-main) !important;
+        font-family: 'Inter', system-ui, sans-serif;
+        margin: 0;
+    }
+
+    .layout-wrapper {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .dashboard-sidebar {
+        width: 280px;
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--border-color);
+        padding: 2rem 1rem;
+        position: fixed;
+        height: 100vh;
+        z-index: 100;
+    }
+
+    .sidebar-logo {
+        padding: 0 1rem 2rem;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary);
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 2rem;
+    }
+
+    .sidebar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1rem;
+        border-radius: 12px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+        border: none;
+        background: transparent;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .nav-item:hover {
+        background: #f1f5f9;
+        color: var(--text-main);
+    }
+
+    .nav-item.active {
+        background: var(--primary) !important;
+        color: white !important;
+    }
+
+    .nav-section-label {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 1.5rem 0 0.5rem 1rem;
+    }
+
+    /* Main Content */
+    .main-content {
+        flex: 1;
+        margin-left: 280px;
+        padding: 2rem 3rem;
+        background: white;
+    }
+
+    .content-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .header-title h1 {
+        font-size: 1.875rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: 0;
+    }
+
+    /* Table */
+    .data-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .simple-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .simple-table th {
+        background: #f8fafc;
+        padding: 1rem 1.5rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #64748b;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .simple-table td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.95rem;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .badge-success { background: #dcfce7; color: #166534; }
+    .badge-warning { background: #fef9c3; color: #854d0e; }
+
+    /* Modals */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        padding: 1rem;
+    }
+
+    .modal-container {
+        background: white;
+        width: 100%;
+        max-width: 750px;
+        border-radius: 24px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+    }
+
+    .modal-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-body {
+        padding: 2.5rem;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    .compact-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .full-width { grid-column: span 2; }
+
+    label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--text-main);
+    }
+
+    input, select, textarea {
+        width: 100%;
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        font-size: 0.95rem;
+        color: var(--text-main);
+        background: #fcfcfc;
+    }
+
+    .btn-primary {
+        background: var(--primary);
+        color: white !important;
+        padding: 0.85rem 2rem;
+        border-radius: 12px;
+        font-weight: 700;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+    }
+
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+    .training-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        background: #f8fafc;
+        padding: 1.25rem;
+        border-radius: 14px;
+        border: 1px solid var(--border-color);
+    }
+
+    .action-btn {
+        padding: 0.6rem;
+        border-radius: 10px;
+        border: 1px solid var(--border-color);
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .action-btn:hover { background: #f1f5f9; color: var(--primary); }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="layout-wrapper">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-logo">Pro-Manager</div>
+        
+        <div class="sidebar-nav">
+            <div class="nav-section-label">Vue d'ensemble</div>
+            <button class="nav-item active" id="btn-list" onclick="switchTab('list')">
+                <span class="material-symbols-outlined">group</span>
+                Liste Étudiants
+            </button>
+            <button class="nav-item" id="btn-sessions" onclick="switchTab('sessions')">
+                <span class="material-symbols-outlined">calendar_month</span>
+                Planning Sessions
+            </button>
+
+            <div class="nav-section-label">Actions Directes</div>
+            <button class="nav-item" style="color: var(--primary);" onclick="openModal('student')">
+                <span class="material-symbols-outlined">person_add</span>
+                Nouvel Étudiant
+            </button>
+            <button class="nav-item" style="color: var(--primary);" onclick="openModal('session')">
+                <span class="material-symbols-outlined">add_task</span>
+                Nouvelle Session
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- TAB: STUDENT LIST -->
+        <div id="tab-list" class="tab-pane active">
+            <div class="content-header">
+                <div class="header-title">
+                    <h1>Gestion des Étudiants</h1>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">{{ responsible_cities|join:", " }}</p>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <form method="get" style="position: relative;">
+                        <span class="material-symbols-outlined" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);">search</span>
+                        <input type="text" name="search" placeholder="Filtrer..." style="width: 300px; padding-left: 3rem;" value="{{ search_query }}">
+                    </form>
+                </div>
+            </div>
+
+            <div class="data-card">
+                <table class="simple-table">
+                    <thead>
+                        <tr>
+                            <th>Étudiant / Email</th>
+                            <th>CIN</th>
+                            <th>Ville</th>
+                            <th>Formations</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>
+                                <div style="font-weight: 700; color: var(--text-main);">{{ student.profile.full_name }}</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ student.profile.user.email }}</div>
+                            </td>
+                            <td style="font-family: monospace; font-weight: 600;">{{ student.profile.cin_or_passport|default:"-" }}</td>
+                            <td>{{ student.profile.city.name }}</td>
+                            <td>
+                                <div style="display: flex; gap: 0.25rem; flex-wrap: wrap; max-width: 200px;">
+                                    {% for f in student.authorized_formations.all %}
+                                    <span style="font-size: 0.65rem; padding: 0.2rem 0.5rem; background: #eff6ff; color: var(--primary); border: 1px solid #dbeafe; border-radius: 4px;">{{ f.title|truncatechars:12 }}</span>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge {% if student.profile.status == 'ACTIVE' %}badge-success{% else %}badge-warning{% endif %}">
+                                    {{ student.profile.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="action-btn" title="Toggle Status" onclick="toggleStatus('{{ student.id }}')">
+                                        <span class="material-symbols-outlined" style="font-size: 1.25rem;">{% if student.profile.status == 'ACTIVE' %}block{% else %}check_circle{% endif %}</span>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 3rem;">Aucun étudiant trouvé.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB: PLANNING SESSIONS -->
+        <div id="tab-sessions" class="tab-pane">
+            <div class="content-header">
+                <div class="header-title">
+                    <h1>Planning Global des Sessions</h1>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+                {% for s in sessions %}
+                <div class="data-card" style="padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                        <span style="font-size: 0.7rem; font-weight: 900; color: var(--primary); text-transform: uppercase;">{{ s.city.name }}</span>
+                        {% if s.is_live %}<span style="color: #ef4444; font-size: 0.7rem; font-weight: 800;">● LIVE</span>{% endif %}
+                    </div>
+                    <h3 style="margin-bottom: 0.5rem; font-size: 1.1rem;">{{ s.formations.first.title }}</h3>
+                    <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">person</span> {{ s.professor.profile.full_name }}
+                    </div>
+                    <div style="background: #f8fafc; padding: 0.75rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
+                        {{ s.start_date|date:"d M Y" }}
+                    </div>
+                </div>
+                {% empty %}
+                <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem;">Aucune session planifiée.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- MODAL: UNIFIED NOUVEL ÉTUDIANT -->
+<div id="modal-student" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2 style="font-weight: 800; font-size: 1.5rem;">Nouvel Étudiant</h2>
+            <button onclick="closeModals()" style="background:none; border:none; cursor:pointer;"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="modal-body">
+            <form id="unifiedStudentForm" class="compact-form">
+                <div class="form-group">
+                    <label>Nom Complet *</label>
+                    <input type="text" id="s-name" required placeholder="Ex: Karim Benhallam">
+                </div>
+                <div class="form-group">
+                    <label>E-mail Direct *</label>
+                    <input type="email" id="s-email" required placeholder="karim@email.com">
+                </div>
+                <div class="form-group">
+                    <label>CIN / Passeport</label>
+                    <input type="text" id="s-cin" placeholder="Ex: BE202615">
+                </div>
+                <div class="form-group">
+                    <label>Téléphone</label>
+                    <input type="text" id="s-phone" placeholder="06XXXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label>Ville de Résidence *</label>
+                    <select id="s-city" required>
+                        <option value="">Sélectionner la ville</option>
+                        {% for c in responsible_cities %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Statut Initial</label>
+                    <select id="s-status">
+                        <option value="ACTIVE">Actif (Inscrit)</option>
+                        <option value="PENDING" selected>En Attente / Prospects</option>
+                    </select>
+                </div>
+                <div class="form-group full-width">
+                    <label>Assigner à des Formations</label>
+                    <div class="training-grid">
+                        {% for t in all_trainings %}
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 500;">
+                            <input type="checkbox" name="s-trainings" value="{{ t.id }}" style="width: auto;">
+                            {{ t.title }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="form-group full-width">
+                    <label>Ajouter à une Session (Facultatif)</label>
+                    <select id="s-session">
+                        <option value="">Choisir plus tard</option>
+                        {% for s in sessions %}
+                        <option value="{{ s.id }}">{{ s.start_date|date:"d/m" }} - {{ s.city.name }} | {{ s.formations.first.title|truncatechars:18 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="full-width" style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 2rem;">
+                    <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; font-size: 1.1rem;">Valider & Enregistrer l'Étudiant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: UNIFIED NOUVELLE SESSION -->
+<div id="modal-session" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2 style="font-weight: 800; font-size: 1.5rem;">Programmer une Session</h2>
+            <button onclick="closeModals()" style="background:none; border:none; cursor:pointer;"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div class="modal-body">
+            <form id="unifiedSessionForm" class="compact-form">
+                <div class="form-group full-width">
+                    <label>Formations Incluses</label>
+                    <div class="training-grid">
+                        {% for t in all_trainings %}
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; font-weight: 500;">
+                            <input type="checkbox" name="ses-trainings" value="{{ t.id }}" style="width: auto;">
+                            {{ t.title }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Professeur / Formateur</label>
+                    <select id="ses-prof" required>
+                        {% for p in all_professors_list %}
+                        <option value="{{ p.id }}">{{ p.profile.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Lieu / Ville</label>
+                    <select id="ses-city" required>
+                        {% for c in responsible_cities %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date Début</label>
+                    <input type="datetime-local" id="ses-start" required>
+                </div>
+                <div class="form-group">
+                    <label>Date Fin Estimée</label>
+                    <input type="datetime-local" id="ses-end" required>
+                </div>
+                <div class="form-group full-width">
+                    <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer;">
+                        <input type="checkbox" id="ses-live" style="width: auto;">
+                        Enregistrement Direct (Live)
+                    </label>
+                </div>
+                <div class="full-width" style="margin-top: 1rem;">
+                    <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">Initialiser la Session</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        
+        document.getElementById('tab-' + tabId).classList.add('active');
+        document.getElementById('btn-' + tabId).classList.add('active');
+    }
+
+    function openModal(id) {
+        document.getElementById('modal-' + id).style.display = 'flex';
+    }
+
+    function closeModals() {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+    }
+
+    const csrf = '{{ csrf_token }}';
+
+    async function apiRequest(url, data) {
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.status === 'success') {
+                location.reload();
+            } else {
+                alert('Erreur: ' + result.message);
+            }
+        } catch (e) {
+            alert('Problème de connexion serveur.');
+        }
+    }
+
+    document.getElementById('unifiedStudentForm').onsubmit = (e) => {
+        e.preventDefault();
+        const training_ids = Array.from(document.querySelectorAll('input[name="s-trainings"]:checked')).map(i => i.value);
+        apiRequest('{% url "diray:create_entity_ajax" %}', {
+            full_name: document.getElementById('s-name').value,
+            email: document.getElementById('s-email').value,
+            cin: document.getElementById('s-cin').value,
+            phone: document.getElementById('s-phone').value,
+            city_id: document.getElementById('s-city').value,
+            status: document.getElementById('s-status').value,
+            formation_ids: training_ids,
+            session_id: document.getElementById('s-session').value,
+            role: 'STUDENT'
+        });
+    };
+
+    document.getElementById('unifiedSessionForm').onsubmit = (e) => {
+        e.preventDefault();
+        const training_ids = Array.from(document.querySelectorAll('input[name="ses-trainings"]:checked')).map(i => i.value);
+        apiRequest('{% url "diray:assistant_create_session" %}', {
+            training_ids: training_ids,
+            professor_id: document.getElementById('ses-prof').value,
+            city_id: document.getElementById('ses-city').value,
+            start_date: document.getElementById('ses-start').value,
+            end_date: document.getElementById('ses-end').value,
+            is_live: document.getElementById('ses-live').checked
+        });
+    };
+
+    async function toggleStatus(studentId) {
+        if (confirm('Confirmer le changement de statut ?')) {
+             await apiRequest(`/api/student/${studentId}/toggle-status/`, {});
+        }
+    }
+
+    window.onclick = (e) => {
+        if (e.target.classList.contains('modal-overlay')) closeModals();
+    };
+</script>
+{% endblock %}

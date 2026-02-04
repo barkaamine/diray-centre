@@ -1,0 +1,71 @@
+{% extends 'diray/base.html' %}
+{% load static %}
+
+{% block title %}Accès Réservé - Diray Centre{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center p-6 bg-neutral-50 dark:bg-background-dark/30">
+    <div class="max-w-2xl w-full text-center space-y-8 animate-fade-in">
+        <!-- Icon/Illustration -->
+        <div class="relative inline-block">
+            <div class="size-24 rounded-3xl bg-accent-green/10 flex items-center justify-center mx-auto mb-6">
+                <span class="material-symbols-outlined text-5xl text-accent-green">lock_person</span>
+            </div>
+            <!-- Decorative dots -->
+            <div class="absolute -top-2 -right-2 size-4 bg-accent-blue rounded-full animate-bounce"></div>
+        </div>
+
+        <div class="space-y-4">
+            <h1 class="text-4xl md:text-5xl font-black text-neutral-900 dark:text-white tracking-tight">
+                Accès <span class="text-accent-green">réservé.</span>
+            </h1>
+            <p class="text-lg md:text-xl text-neutral-500 dark:text-neutral-400 font-medium max-w-md mx-auto leading-relaxed">
+                Veuillez vous connecter ou créer un compte pour accéder à votre espace personnel et suivre vos formations.
+            </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            <a href="{% url 'diray:login' %}" 
+               class="w-full sm:w-auto px-10 py-4 bg-accent-green hover:bg-[#2d6550] text-white rounded-2xl font-black text-lg shadow-xl shadow-accent-green/10 hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 group">
+                <span>Se connecter</span>
+                <span class="material-symbols-outlined transition-transform group-hover:translate-x-1">login</span>
+            </a>
+            
+            <a href="{% url 'diray:register' %}" 
+               class="w-full sm:w-auto px-10 py-4 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white border-2 border-neutral-100 dark:border-neutral-700 hover:border-accent-green/30 rounded-2xl font-black text-lg shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 group">
+                <span>Créer un compte</span>
+                <span class="material-symbols-outlined transition-transform group-hover:-translate-y-1">person_add</span>
+            </a>
+        </div>
+
+        <!-- Perceived Value Hints -->
+        <div class="pt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-lg mx-auto">
+            <div class="p-4 rounded-2xl bg-white/50 dark:bg-neutral-900/50 backdrop-blur-sm border border-neutral-100 dark:border-neutral-800">
+                <span class="material-symbols-outlined text-accent-green mb-2">school</span>
+                <p class="text-[10px] font-black uppercase tracking-wider text-neutral-400">Formations</p>
+                <p class="text-sm font-bold">Certifiées</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-white/50 dark:bg-neutral-900/50 backdrop-blur-sm border border-neutral-100 dark:border-neutral-800">
+                <span class="material-symbols-outlined text-accent-blue mb-2">videocam</span>
+                <p class="text-[10px] font-black uppercase tracking-wider text-neutral-400">Cours Live</p>
+                <p class="text-sm font-bold">Interactifs</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-white/50 dark:bg-neutral-900/50 backdrop-blur-sm border border-neutral-100 dark:border-neutral-800">
+                <span class="material-symbols-outlined text-accent-green mb-2">trending_up</span>
+                <p class="text-[10px] font-black uppercase tracking-wider text-neutral-400">Progression</p>
+                <p class="text-sm font-bold">Temps Réel</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+        animation: fade-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+</style>
+{% endblock %}

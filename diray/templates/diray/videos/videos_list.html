@@ -1,0 +1,91 @@
+{% extends 'diray/base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Vidéos - {{ training.title }}{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 dark:bg-neutral-900 min-h-screen py-8">
+    <div class="max-w-[1440px] mx-auto px-4 sm:px-6">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <a href="{% url 'diray:dashboard' %}" class="inline-flex items-center gap-2 text-accent-green hover:text-green-700 mb-4">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Retour au tableau de bord
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ training.title }}</h1>
+            <p class="text-gray-600 dark:text-gray-400">{{ videos.count }} vidéo{{ videos.count|pluralize }} disponible{{ videos.count|pluralize }}</p>
+        </div>
+        
+        <!-- Videos Grid -->
+        {% if videos %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for video in videos %}
+            <div class="bg-white dark:bg-neutral-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-neutral-700 hover:shadow-lg transition-all group">
+                <!-- Thumbnail -->
+                <div class="relative h-48 bg-gray-200 dark:bg-neutral-700 overflow-hidden">
+                    <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-accent-green/20 to-accent-blue/20">
+                        <span class="material-symbols-outlined text-6xl text-accent-green">play_circle</span>
+                    </div>
+                    
+                    <!-- Duration Badge -->
+                    <div class="absolute bottom-2 right-2 bg-black/80 backdrop-blur px-2 py-1 rounded text-xs font-bold text-white">
+                        {{ video.duration_seconds|default:600|floatformat:0 }} min
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    {% with progress=video_progress|get_item:video.id %}
+                    {% if progress.percentage > 0 %}
+                    <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-800/50">
+                        <div class="h-full bg-accent-green" style="width: {{ progress.percentage }}%"></div>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                    
+                    <!-- Play Overlay -->
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <div class="size-16 rounded-full bg-accent-green flex items-center justify-center transform scale-90 group-hover:scale-100 transition-transform">
+                            <span class="material-symbols-outlined text-3xl text-white">play_arrow</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Content -->
+                <div class="p-5">
+                    <h3 class="font-bold text-gray-900 dark:text-white mb-2 line-clamp-2 min-h-[3rem]">{{ video.title }}</h3>
+                    
+                    {% with progress=video_progress|get_item:video.id %}
+                    <div class="flex items-center justify-between text-sm">
+                        {% if progress.completed %}
+                        <span class="flex items-center gap-1 text-green-600 font-medium">
+                            <span class="material-symbols-outlined text-base">check_circle</span>
+                            Terminée
+                        </span>
+                        {% elif progress.percentage > 0 %}
+                        <span class="text-accent-green font-medium">{{ progress.percentage }}% complété</span>
+                        {% else %}
+                        <span class="text-gray-500">Non commencée</span>
+                        {% endif %}
+                        
+                        <a href="{% url 'diray:classroom_video' training.slug video.id %}" class="px-4 py-2 bg-accent-green text-white text-sm font-bold rounded-lg hover:bg-green-700 transition-colors">
+                            {% if progress.percentage > 0 %}Reprendre{% else %}Commencer{% endif %}
+                        </a>
+                    </div>
+                    {% endwith %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-16 bg-white dark:bg-neutral-800 rounded-xl border-dashed border-2 border-gray-200 dark:border-neutral-700">
+            <span class="material-symbols-outlined text-6xl text-gray-300 mb-4">video_library</span>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Aucune vidéo disponible</h3>
+            <p class="text-gray-500">Les vidéos de cette formation seront bientôt disponibles.</p>
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+
+{% endblock %}
