@@ -1,0 +1,8 @@
+# Nixpacks configuration for Railway
+# Disable release phase during build (migrations need runtime network access)
+
+[phases.setup]
+nixPkgs = ["python3", "postgresql_16.dev", "gcc"]
+
+[start]
+cmd = "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn Project.wsgi --bind 0.0.0.0:$PORT"
