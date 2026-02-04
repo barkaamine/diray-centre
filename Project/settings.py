@@ -127,6 +127,9 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+CSRF_TRUSTED_ORIGINS = [
+    "https://web-production-7b55d.up.railway.app",
+]
 
 # Session Configuration
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
